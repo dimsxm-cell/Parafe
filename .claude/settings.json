@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Add-Type -AssemblyName System.IO.Compression.FileSystem; $zip = [System.IO.Compression.ZipFile]::OpenRead\\(\"C:\\\\Users\\\\HP\\\\OneDrive\\\\Documents\\\\SAAS\\\\Signly\\\\signly-deploy.zip\"\\); $zip.Entries | Select-Object FullName, Length; $zip.Dispose\\(\\))",
+      "PowerShell($dest = \"C:\\\\Users\\\\HP\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-HP-OneDrive-Documents-SAAS\\\\3889c120-c235-4f1a-bc9a-3cffbd1273d6\\\\scratchpad\\\\zipcheck\"; New-Item -ItemType Directory -Force -Path $dest | Out-Null; Add-Type -AssemblyName System.IO.Compression.FileSystem; [System.IO.Compression.ZipFile]::ExtractToDirectory\\(\"C:\\\\Users\\\\HP\\\\OneDrive\\\\Documents\\\\SAAS\\\\Signly\\\\signly-deploy.zip\", $dest, $true\\); Select-String -Path \"$dest\\\\index.html\" -Pattern \"SignlyPDF|Selected Recipient|Detect with AI\" | Select-Object LineNumber,Line)",
+      "PowerShell($dest = \"C:\\\\Users\\\\HP\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-HP-OneDrive-Documents-SAAS\\\\3889c120-c235-4f1a-bc9a-3cffbd1273d6\\\\scratchpad\\\\zipcheck\"; Remove-Item -Recurse -Force $dest -ErrorAction SilentlyContinue; Expand-Archive -Path \"C:\\\\Users\\\\HP\\\\OneDrive\\\\Documents\\\\SAAS\\\\Signly\\\\signly-deploy.zip\" -DestinationPath $dest -Force; Select-String -Path \"$dest\\\\index.html\" -Pattern \"SignlyPDF|Selected Recipient|Detect with AI\" | Select-Object LineNumber,Line)"
+    ]
+  }
+}

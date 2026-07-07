@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Modèles de documents — Parafé</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+:root {
+  --bg:      #FFFFFF;
+  --card:    #F6F7FB;
+  --slate:   #EEF0F6;
+  --champ:   #4F46E5;
+  --champl:  #6D64EB;
+  --ivory:   #12172B;
+  --gray:    rgba(18,23,43,0.62);
+  --grayl:   rgba(18,23,43,0.78);
+  --green:   #15803D;
+  --amber:   #B45309;
+  --bd:      rgba(18,23,43,0.10);
+}
+html { font-size:16px; scroll-behavior:smooth; overflow-x:hidden; touch-action: pan-y pinch-zoom; }
+body {
+  font-family:'Inter',sans-serif; background:var(--bg); color:var(--ivory);
+  line-height:1.5; overflow-x:hidden; width:100%; max-width:100vw;
+}
+a { text-decoration:none; color:inherit; }
+button { font-family:inherit; border:none; background:none; cursor:pointer; }
+
+/* ── NAV ── */
+nav {
+  position:sticky; top:0; z-index:50;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:.9rem 4%; background:rgba(255,255,255,.9); backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--bd);
+}
+.nav-left { display:flex; align-items:center; gap:2.5rem; }
+.nav-logo { font-weight:800; font-size:1.05rem; letter-spacing:-.3px; }
+.nav-logo span { color:var(--champ); }
+.nav-links { display:flex; gap:1.4rem; }
+.nav-links a { font-size:.82rem; color:var(--ivory); opacity:.72; transition:opacity .2s; }
+.nav-links a:hover, .nav-links a.active { opacity:1; color:var(--champ); }
+.nav-cta {
+  display:inline-block;
+  background:var(--champ); color:#fff; padding:.55rem 1.2rem; border-radius:100px;
+  font-weight:700; font-size:.8rem; transition:all .2s;
+}
+.nav-cta:hover { background:var(--champl); transform:scale(1.04); }
+
+/* ── LAYOUT ── */
+.page { display:flex; max-width:1400px; margin:0 auto; }
+.sidebar {
+  width:240px; flex-shrink:0; padding:2rem 1.25rem 2rem 4%;
+  border-right:1px solid var(--bd); min-height:calc(100vh - 65px);
+}
+.sidebar-title {
+  font-family:'JetBrains Mono',monospace; font-size:.68rem; text-transform:uppercase;
+  letter-spacing:1px; color:var(--gray); margin-bottom:.9rem;
+}
+.cat-list { display:flex; flex-direction:column; gap:.15rem; margin-bottom:2rem; }
+.cat-item {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:.55rem .75rem; border-radius:.65rem; font-size:.86rem; color:var(--grayl);
+  transition:all .15s; cursor:pointer;
+}
+.cat-item:hover { background:var(--slate); color:var(--ivory); }
+.cat-item.active { background:rgba(79,70,229,.08); color:var(--champ); font-weight:600; }
+.cat-count { font-family:'JetBrains Mono',monospace; font-size:.7rem; color:var(--gray); }
+.cat-item.active .cat-count { color:var(--champ); opacity:.7; }
+
+.main { flex:1; padding:2rem 4% 5rem 2.5rem; min-width:0; }
+
+/* ── TOOLBAR ── */
+.toolbar { display:flex; gap:.75rem; margin-bottom:1.75rem; flex-wrap:wrap; }
+.filter-chip {
+  display:flex; align-items:center; gap:.4rem;
+  padding:.55rem 1rem; border:1px solid var(--bd); border-radius:.7rem;
+  font-size:.82rem; color:var(--grayl); background:#fff;
+}
+.filter-chip svg { width:13px; height:13px; opacity:.55; }
+.search-box {
+  flex:1; min-width:220px; display:flex; align-items:center; gap:.55rem;
+  padding:.55rem 1rem; border:1px solid var(--bd); border-radius:.7rem; background:#fff;
+}
+.search-box svg { width:15px; height:15px; opacity:.4; flex-shrink:0; }
+.search-box input { border:none; outline:none; font-size:.85rem; width:100%; background:transparent; color:var(--ivory); }
+.search-box input::placeholder { color:var(--gray); }
+
+.results-head {
+  display:flex; justify-content:space-between; align-items:baseline;
+  margin-bottom:1.5rem; flex-wrap:wrap; gap:.5rem;
+}
+.results-title { font-size:1.5rem; font-weight:800; letter-spacing:-.5px; }
+.results-count { font-family:'JetBrains Mono',monospace; font-size:.78rem; color:var(--gray); }
+
+/* ── GRID DE MODÈLES ── */
+.doc-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.25rem; }
+.doc-card {
+  border:1px solid var(--bd); border-radius:1.1rem; overflow:hidden; background:#fff;
+  transition:all .2s; display:flex; flex-direction:column; opacity:0; transform:translateY(14px);
+}
+.doc-card.in { opacity:1; transform:translateY(0); transition:opacity .5s ease, transform .5s ease, box-shadow .2s, border-color .2s; }
+.doc-card:hover { border-color:rgba(79,70,229,.35); box-shadow:0 14px 34px -12px rgba(18,23,43,.18); transform:translateY(-3px); }
+
+.doc-thumb {
+  position:relative; height:150px; background:var(--card);
+  display:flex; align-items:center; justify-content:center; padding:1.1rem;
+  border-bottom:1px solid var(--bd);
+}
+.doc-thumb .paper {
+  width:78px; height:100px; background:#fff; border-radius:5px;
+  box-shadow:0 6px 18px -6px rgba(18,23,43,.18); position:relative; overflow:hidden;
+  border-top:5px solid var(--accent, var(--champ));
+}
+.doc-thumb .ln { position:absolute; left:9px; right:9px; height:3px; border-radius:2px; background:rgba(18,23,43,.09); }
+.doc-thumb .sig { position:absolute; bottom:10px; left:9px; width:34px; height:2px; background:var(--accent, var(--champ)); opacity:.5; border-radius:2px; }
+.tier-tag {
+  position:absolute; top:.7rem; left:.7rem;
+  font-family:'JetBrains Mono',monospace; font-size:.62rem; font-weight:600;
+  padding:.2rem .55rem; border-radius:100px; letter-spacing:.3px;
+}
+.tier-tag.populaire { background:rgba(79,70,229,.1); color:var(--champ); }
+.tier-tag.nouveau { background:rgba(21,128,61,.1); color:var(--green); }
+.tier-tag.standard { background:var(--slate); color:var(--gray); }
+.doc-preview-btn {
+  position:absolute; top:.7rem; right:.7rem; width:28px; height:28px; border-radius:50%;
+  background:rgba(255,255,255,.92); border:1px solid var(--bd); display:flex; align-items:center; justify-content:center;
+  color:var(--grayl); transition:all .18s; backdrop-filter:blur(4px);
+}
+.doc-preview-btn svg { width:14px; height:14px; }
+.doc-preview-btn:hover { background:#fff; color:var(--champ); border-color:var(--champ); transform:scale(1.08); }
+
+.doc-body { padding:1.1rem 1.15rem 1.25rem; display:flex; flex-direction:column; flex:1; }
+.doc-cat { font-family:'JetBrains Mono',monospace; font-size:.64rem; text-transform:uppercase; letter-spacing:.6px; color:var(--champ); margin-bottom:.4rem; }
+.doc-title { font-size:.95rem; font-weight:700; margin-bottom:.35rem; line-height:1.3; }
+.doc-desc { font-size:.78rem; color:var(--gray); line-height:1.5; margin-bottom:1rem; flex:1; }
+.doc-btn {
+  display:block;
+  width:100%; padding:.6rem; border-radius:.6rem; border:1px solid var(--bd);
+  font-size:.8rem; font-weight:600; color:var(--ivory); text-align:center;
+  transition:all .18s;
+}
+.doc-card:hover .doc-btn { background:var(--champ); border-color:var(--champ); color:#fff; }
+
+/* ── EMPTY STATE ── */
+.empty-state { display:none; text-align:center; padding:5rem 1rem; color:var(--gray); }
+.empty-state.show { display:block; }
+.empty-state .e-icon { font-size:2rem; margin-bottom:1rem; opacity:.4; }
+.empty-state .e-title { font-size:1.1rem; font-weight:700; color:var(--ivory); margin-bottom:.4rem; }
+
+/* ── MODALE DE REMPLISSAGE — style éditeur PDF ── */
+.modal-overlay {
+  position:fixed; inset:0; z-index:200; display:none; align-items:center; justify-content:center;
+  background:rgba(18,23,43,.55); backdrop-filter:blur(3px); padding:1.5rem 1rem;
+}
+.modal-overlay.show { display:flex; }
+.modal {
+  background:#fff; border-radius:1rem; width:100%; max-width:1080px; height:88vh;
+  overflow:hidden; display:flex; flex-direction:column; box-shadow:0 30px 80px -20px rgba(18,23,43,.35);
+}
+.modal-topbar {
+  display:flex; align-items:center; justify-content:space-between; gap:1rem;
+  padding:.75rem 1.25rem; border-bottom:1px solid var(--bd); flex-shrink:0;
+}
+.modal-topbar-left { display:flex; align-items:center; gap:.65rem; min-width:0; }
+.modal-brand { font-weight:800; font-size:.92rem; letter-spacing:-.2px; flex-shrink:0; white-space:nowrap; }
+.modal-brand span { color:var(--champ); }
+.modal-doc-name { font-size:.85rem; font-weight:600; color:var(--ivory); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:220px; }
+.modal-status-badge {
+  font-family:'JetBrains Mono',monospace; font-size:.6rem; font-weight:700; text-transform:uppercase; letter-spacing:.4px;
+  padding:.2rem .55rem; border-radius:100px; background:rgba(180,83,9,.1); color:var(--amber);
+  border:1px solid rgba(180,83,9,.25); flex-shrink:0;
+}
+.modal-topbar-right { display:flex; align-items:center; gap:.5rem; flex-shrink:0; }
+.modal-icon-btn {
+  width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+  background:var(--slate); color:var(--gray); font-size:.85rem; border:none; transition:all .15s; flex-shrink:0;
+}
+.modal-icon-btn:hover { background:var(--bd); color:var(--ivory); }
+.btn-send {
+  background:var(--champ); color:#fff; border:none; padding:.55rem 1.1rem; border-radius:.6rem;
+  font-weight:700; font-size:.8rem; display:flex; align-items:center; gap:.4rem; transition:all .15s; white-space:nowrap;
+}
+.btn-send:hover { background:var(--champl); }
+
+.modal-work { display:flex; flex:1; min-height:0; }
+.modal-thumbs { width:82px; flex-shrink:0; background:var(--slate); border-right:1px solid var(--bd); padding:1rem .5rem; overflow-y:auto; }
+.thumb-page {
+  width:100%; aspect-ratio:3/4; background:#fff; border:1px solid var(--bd); border-radius:.4rem;
+  box-shadow:0 2px 6px rgba(18,23,43,.1); padding:.35rem; display:flex; flex-direction:column; gap:.22rem; overflow:hidden;
+}
+.thumb-page .tp-accent { height:4px; border-radius:2px 2px 0 0; margin:-.35rem -.35rem .28rem; }
+.thumb-page .tp-bar { height:2px; border-radius:1px; background:rgba(18,23,43,.1); }
+.thumb-label { text-align:center; font-family:'JetBrains Mono',monospace; font-size:.6rem; color:var(--gray); margin-top:.5rem; }
+
+.modal-canvas { flex:1; background:#E7E9F1; padding:2rem 1.5rem; overflow-y:auto; display:flex; justify-content:center; }
+
+.modal-fields-panel { width:290px; flex-shrink:0; background:#fff; border-left:1px solid var(--bd); padding:1.25rem 1.4rem; overflow-y:auto; }
+.panel-title { font-family:'JetBrains Mono',monospace; font-size:.66rem; text-transform:uppercase; letter-spacing:.6px; color:var(--gray); margin-bottom:1.1rem; }
+
+.form-group { margin-bottom:1.1rem; }
+.form-group label { display:block; font-size:.78rem; font-weight:600; color:var(--grayl); margin-bottom:.4rem; }
+.form-group input, .form-group textarea {
+  width:100%; padding:.6rem .75rem; border:1px solid var(--bd); border-radius:.6rem;
+  font-size:.85rem; font-family:inherit; color:var(--ivory); background:#fff; resize:vertical;
+}
+.form-group input:focus, .form-group textarea:focus { outline:none; border-color:var(--champ); }
+.form-row { display:flex; gap:.75rem; }
+.form-row .form-group { flex:1; }
+.preview-doc {
+  background:#fff; border:1px solid var(--bd); border-radius:.5rem; padding:2rem 2.25rem;
+  width:100%; max-width:560px; min-height:100%; font-size:.85rem; line-height:1.7;
+  box-shadow:0 10px 30px -12px rgba(18,23,43,.2); align-self:flex-start;
+}
+.preview-doc h3 { font-size:1.05rem; margin-bottom:.2rem; }
+.preview-meta { font-family:'JetBrains Mono',monospace; font-size:.72rem; color:var(--gray); margin-bottom:1.2rem; padding-bottom:1rem; border-bottom:1px dashed var(--bd); }
+.preview-field-empty { color:rgba(18,23,43,.32); font-style:italic; }
+.preview-sig { margin-top:2rem; padding-top:1rem; border-top:1px solid var(--bd); display:flex; justify-content:space-between; gap:1rem; font-size:.75rem; color:var(--gray); }
+@media (max-width:900px) {
+  .modal-thumbs { display:none; }
+  .modal-fields-panel { width:250px; }
+  .modal-doc-name { max-width:130px; }
+}
+@media (max-width:760px) {
+  .modal { height:92vh; }
+  .modal-work { flex-direction:column; }
+  .modal-fields-panel { width:100%; border-left:none; border-top:1px solid var(--bd); }
+  .modal-canvas { padding:1.25rem; }
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width:1100px) {
+  .doc-grid { grid-template-columns:repeat(3,1fr); }
+}
+@media (max-width:900px) {
+  .sidebar { display:none; }
+  .main { padding:1.5rem 5% 4rem; }
+  .doc-grid { grid-template-columns:repeat(2,1fr); }
+}
+@media (max-width:640px) {
+  .nav-links { display:none; }
+  .doc-grid { grid-template-columns:1fr; gap:1rem; }
+  .results-title { font-size:1.25rem; }
+  .toolbar { gap:.5rem; }
+  .filter-chip { padding:.5rem .8rem; font-size:.78rem; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-left">
+    <a href="signly-v3.html" class="nav-logo" style="display:flex;align-items:center;gap:.5rem"><svg width="26" height="26" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0"><rect width="30" height="30" rx="8" fill="#4F46E5"/><path d="M7 19.5 C9.5 12.5 12.5 22.5 15 15.5 C17 10.5 19.5 17.5 23 11.5" stroke="white" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Paraf<span>é</span></span></a>
+    <div class="nav-links">
+      <a href="signly-modeles.html" class="active">Modèles</a>
+      <a href="signly-v3.html#features">Fonctionnalités</a>
+      <a href="signly-v3.html#tarifs">Tarifs</a>
+      <a href="signly-v3.html#faq">FAQ</a>
+    </div>
+  </div>
+  <a href="signly-v3.html#cta" class="nav-cta">Rejoindre la beta</a>
+</nav>
+
+<div class="page">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-title">Catégories</div>
+    <div class="cat-list" id="catList">
+      <div class="cat-item active" data-cat="tous"><span>Tous les modèles</span><span class="cat-count">22</span></div>
+      <div class="cat-item" data-cat="freelance"><span>Freelance &amp; Devis</span><span class="cat-count">5</span></div>
+      <div class="cat-item" data-cat="travail"><span>Contrats de travail</span><span class="cat-count">5</span></div>
+      <div class="cat-item" data-cat="immo"><span>Immobilier</span><span class="cat-count">4</span></div>
+      <div class="cat-item" data-cat="juridique"><span>Juridique &amp; Société</span><span class="cat-count">5</span></div>
+      <div class="cat-item" data-cat="litiges"><span>Relances &amp; Litiges</span><span class="cat-count">3</span></div>
+      <div class="cat-item" data-cat="particuliers"><span>Particuliers &amp; Vie quotidienne</span><span class="cat-count">18</span></div>
+    </div>
+    <div class="sidebar-title">Besoin d'autre chose ?</div>
+    <div style="font-size:.8rem;color:var(--gray);line-height:1.6;">
+      Uploade n'importe quel document existant — Parafé le rend signable en quelques secondes.
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="toolbar">
+      <div class="search-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <input type="text" id="searchInput" placeholder="Rechercher un modèle (devis, bail, CDI...)">
+      </div>
+      <button class="filter-chip" id="sortChip" onclick="cycleSortMode()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+        Trier : <span id="sortLabel">Les plus utilisés</span>
+      </button>
+    </div>
+
+    <div class="results-head">
+      <div class="results-title" id="resultsTitle">Tous les modèles</div>
+      <div class="results-count" id="resultsCount">22 modèles</div>
+    </div>
+
+    <div class="doc-grid" id="docGrid"></div>
+    <div class="empty-state" id="emptyState">
+      <div class="e-icon">🔎</div>
+      <div class="e-title">Aucun modèle ne correspond</div>
+      <div>Essaie un autre mot-clé, ou uploade ton propre document.</div>
+    </div>
+  </main>
+</div>
+
+<!-- MODALE DE REMPLISSAGE — style éditeur PDF -->
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this) closeModelForm()">
+  <div class="modal">
+    <div class="modal-topbar">
+      <div class="modal-topbar-left">
+        <div class="modal-brand">Signly<span>PDF</span></div>
+        <div class="modal-doc-name" id="modalTitle"></div>
+        <div id="modalCat" style="display:none"></div>
+        <span class="modal-status-badge">Draft</span>
+      </div>
+      <div class="modal-topbar-right">
+        <button type="button" class="modal-icon-btn" title="Aide">?</button>
+        <button type="button" class="modal-icon-btn" title="Fermer" onclick="closeModelForm()">✕</button>
+        <button type="button" class="btn-send" onclick="closeModelForm()">↗ Envoyer le document</button>
+      </div>
+    </div>
+    <div class="modal-work">
+      <div class="modal-thumbs">
+        <div class="thumb-page" id="thumbPage">
+          <div class="tp-accent"></div>
+          <div class="tp-bar" style="width:65%"></div>
+          <div class="tp-bar" style="width:85%"></div>
+          <div class="tp-bar" style="width:50%"></div>
+          <div class="tp-bar" style="width:75%;margin-top:auto"></div>
+          <div class="tp-bar" style="width:40%"></div>
+        </div>
+        <div class="thumb-label">Page 1</div>
+      </div>
+      <div class="modal-canvas">
+        <div class="preview-doc" id="previewDoc"></div>
+      </div>
+      <div class="modal-fields-panel">
+        <div class="panel-title">Champs du document</div>
+        <div class="form-group">
+          <label>Partie 1 — vous / votre société</label>
+          <input type="text" id="fPartie1" placeholder="Ex: Jean Dupont — JD Conseil">
+        </div>
+        <div class="form-group">
+          <label>Partie 2 — client / autre partie</label>
+          <input type="text" id="fPartie2" placeholder="Ex: Société Martin SARL">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Date</label>
+            <input type="date" id="fDate">
+          </div>
+          <div class="form-group">
+            <label>Montant (optionnel)</label>
+            <input type="text" id="fMontant" placeholder="Ex: 1 500 €">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Adresse (optionnel)</label>
+          <input type="text" id="fAdresse" placeholder="Ex: 12 rue de la Paix, 75002 Paris">
+        </div>
+        <div class="form-group">
+          <label>Objet / Description</label>
+          <textarea id="fObjet" rows="4"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const DOCS = [
+  // Freelance & Devis
+  {cat:'freelance', catLabel:'Freelance & Devis', title:'Devis professionnel', desc:'Devis conforme avec conditions de validité et mentions légales.', tag:'populaire', accent:'#4F46E5'},
+  {cat:'freelance', catLabel:'Freelance & Devis', title:'Facture standard', desc:'Facture avec calcul HT / TVA automatique et numérotation légale.', tag:'populaire', accent:'#4F46E5'},
+  {cat:'freelance', catLabel:'Freelance & Devis', title:"Facture d'acompte", desc:"Demande d'acompte avant démarrage d'une mission ou d'un projet.", tag:'standard', accent:'#4F46E5'},
+  {cat:'freelance', catLabel:'Freelance & Devis', title:'Bon de commande', desc:'Confirmation de commande avec délais, quantités et conditions.', tag:'standard', accent:'#4F46E5'},
+  {cat:'freelance', catLabel:'Freelance & Devis', title:'Contrat de prestation de services', desc:'Mission freelance avec livrables, échéances et propriété intellectuelle.', tag:'populaire', accent:'#4F46E5'},
+  {cat:'freelance', catLabel:'Freelance & Devis', title:'Devis simplifié', desc:'Devis rapide pour petites missions, sans détail ligne par ligne.', tag:'standard', accent:'#4F46E5'},
+  {cat:'freelance', catLabel:'Freelance & Devis', title:'Facture rectificative', desc:"Correction d'une facture déjà émise, avec référence à l'originale.", tag:'standard', accent:'#4F46E5'},
+  {cat:'freelance', catLabel:'Freelance & Devis', title:"Note d'honoraires", desc:'Facturation des professions libérales réglementées.', tag:'standard', accent:'#4F46E5'},
+  {cat:'freelance', catLabel:'Freelance & Devis', title:'Contrat de sous-traitance', desc:'Délégation d’une partie de la prestation à un tiers prestataire.', tag:'populaire', accent:'#4F46E5'},
+  {cat:'freelance', catLabel:'Freelance & Devis', title:'Cahier des charges', desc:"Spécifications détaillées d'un projet avant démarrage.", tag:'standard', accent:'#4F46E5'},
+  {cat:'freelance', catLabel:'Freelance & Devis', title:'Proposition commerciale', desc:'Offre détaillée présentée à un prospect avant signature.', tag:'standard', accent:'#4F46E5'},
+  {cat:'freelance', catLabel:'Freelance & Devis', title:'Bon de livraison', desc:'Confirmation de réception de marchandises ou de livrables.', tag:'standard', accent:'#4F46E5'},
+  {cat:'freelance', catLabel:'Freelance & Devis', title:'Contrat de maintenance', desc:"Prestation récurrente d'entretien ou de support technique.", tag:'standard', accent:'#4F46E5'},
+  {cat:'freelance', catLabel:'Freelance & Devis', title:'Devis travaux', desc:'Estimation chiffrée pour des travaux de rénovation ou construction.', tag:'populaire', accent:'#4F46E5'},
+  {cat:'freelance', catLabel:'Freelance & Devis', title:'Contrat freelance récurrent (retainer)', desc:"Engagement mensuel récurrent avec volume d'heures défini.", tag:'populaire', accent:'#4F46E5'},
+  {cat:'freelance', catLabel:'Freelance & Devis', title:"Facture d'avoir", desc:"Remboursement ou annulation partielle d'une facture existante.", tag:'standard', accent:'#4F46E5'},
+  {cat:'freelance', catLabel:'Freelance & Devis', title:'Relevé d’heures (timesheet)', desc:"Décompte du temps facturé sur une mission au forfait horaire.", tag:'standard', accent:'#4F46E5'},
+  {cat:'freelance', catLabel:'Freelance & Devis', title:'Contrat de partenariat commercial', desc:'Collaboration entre deux entreprises sur un projet commun.', tag:'standard', accent:'#4F46E5'},
+  {cat:'freelance', catLabel:'Freelance & Devis', title:"Accord d'apport d'affaires", desc:"Rémunération d'un apporteur pour une mise en relation commerciale.", tag:'nouveau', accent:'#4F46E5'},
+  {cat:'freelance', catLabel:'Freelance & Devis', title:'Devis avec échéancier de paiement', desc:'Paiement fractionné en plusieurs versements planifiés.', tag:'standard', accent:'#4F46E5'},
+
+  // Contrats de travail
+  {cat:'travail', catLabel:'Contrats de travail', title:'CDI', desc:'Contrat à durée indéterminée conforme au droit du travail français.', tag:'populaire', accent:'#B45309'},
+  {cat:'travail', catLabel:'Contrats de travail', title:'CDD', desc:'Contrat à durée déterminée avec motif de recours et terme précis.', tag:'standard', accent:'#B45309'},
+  {cat:'travail', catLabel:'Contrats de travail', title:'Convention de stage', desc:'Stage étudiant avec gratification, encadrement et durée légale.', tag:'standard', accent:'#B45309'},
+  {cat:'travail', catLabel:'Contrats de travail', title:'Rupture conventionnelle', desc:"Accord de rupture à l'amiable entre employeur et salarié.", tag:'standard', accent:'#B45309'},
+  {cat:'travail', catLabel:'Contrats de travail', title:'Avenant au contrat de travail', desc:'Modification du salaire, du poste ou du temps de travail.', tag:'nouveau', accent:'#B45309'},
+  {cat:'travail', catLabel:'Contrats de travail', title:"Contrat d'apprentissage", desc:'Formation en alternance avec un employeur et un CFA.', tag:'standard', accent:'#B45309'},
+  {cat:'travail', catLabel:'Contrats de travail', title:'Contrat de professionnalisation', desc:"Alternance pour l'insertion ou le retour à l'emploi.", tag:'standard', accent:'#B45309'},
+  {cat:'travail', catLabel:'Contrats de travail', title:"Promesse d'embauche", desc:'Engagement écrit avant la signature du contrat définitif.', tag:'populaire', accent:'#B45309'},
+  {cat:'travail', catLabel:'Contrats de travail', title:"Lettre d'embauche", desc:"Confirmation des conditions d'un poste avant contrat formel.", tag:'standard', accent:'#B45309'},
+  {cat:'travail', catLabel:'Contrats de travail', title:'Avertissement disciplinaire', desc:'Sanction écrite suite à un manquement du salarié.', tag:'standard', accent:'#B45309'},
+  {cat:'travail', catLabel:'Contrats de travail', title:'Certificat de travail', desc:'Document remis à la fin du contrat, obligatoire par la loi.', tag:'populaire', accent:'#B45309'},
+  {cat:'travail', catLabel:'Contrats de travail', title:'Solde de tout compte', desc:'Récapitulatif des sommes versées à la fin du contrat.', tag:'populaire', accent:'#B45309'},
+  {cat:'travail', catLabel:'Contrats de travail', title:'Attestation employeur (France Travail)', desc:"Document nécessaire à l'inscription au chômage.", tag:'populaire', accent:'#B45309'},
+  {cat:'travail', catLabel:'Contrats de travail', title:'Convention de forfait jours', desc:'Rémunération au forfait annuel en jours travaillés.', tag:'standard', accent:'#B45309'},
+  {cat:'travail', catLabel:'Contrats de travail', title:'Accord de télétravail', desc:'Cadre contractuel du travail à distance régulier.', tag:'populaire', accent:'#B45309'},
+  {cat:'travail', catLabel:'Contrats de travail', title:'Charte de télétravail', desc:'Règles internes applicables aux salariés en télétravail.', tag:'standard', accent:'#B45309'},
+  {cat:'travail', catLabel:'Contrats de travail', title:'Note de service', desc:"Communication interne d'une décision ou consigne.", tag:'standard', accent:'#B45309'},
+  {cat:'travail', catLabel:'Contrats de travail', title:'Règlement intérieur', desc:"Règles disciplinaires et de sécurité applicables dans l'entreprise.", tag:'standard', accent:'#B45309'},
+  {cat:'travail', catLabel:'Contrats de travail', title:'Fiche de poste', desc:"Description des missions, compétences et responsabilités d'un poste.", tag:'standard', accent:'#B45309'},
+  {cat:'travail', catLabel:'Contrats de travail', title:'Contrat de mission (intérim)', desc:"Mise à disposition temporaire d'un salarié par une agence.", tag:'standard', accent:'#B45309'},
+  {cat:'travail', catLabel:'Contrats de travail', title:'Contrat de travail intermittent', desc:'Alternance de périodes travaillées et non travaillées.', tag:'nouveau', accent:'#B45309'},
+  {cat:'travail', catLabel:'Contrats de travail', title:'Avenant — clause de non-concurrence', desc:'Restriction d’activité du salarié après la fin du contrat.', tag:'standard', accent:'#B45309'},
+  {cat:'travail', catLabel:'Contrats de travail', title:'Avenant — clause de mobilité', desc:"Engagement du salarié à accepter un changement de lieu de travail.", tag:'nouveau', accent:'#B45309'},
+  {cat:'travail', catLabel:'Contrats de travail', title:'Demande de congé', desc:'Formulaire de demande de congés payés ou exceptionnels.', tag:'standard', accent:'#B45309'},
+
+  // Immobilier
+  {cat:'immo', catLabel:'Immobilier', title:"Bail d'habitation", desc:'Location meublée ou vide, conforme à la loi ALUR.', tag:'populaire', accent:'#15803D'},
+  {cat:'immo', catLabel:'Immobilier', title:'Bail commercial', desc:"Location d'un local professionnel ou commercial.", tag:'standard', accent:'#15803D'},
+  {cat:'immo', catLabel:'Immobilier', title:'État des lieux', desc:"Entrée ou sortie, avec relevés de compteurs et photos.", tag:'standard', accent:'#15803D'},
+  {cat:'immo', catLabel:'Immobilier', title:'Congé pour vente ou reprise', desc:'Notification de fin de bail au locataire, avec préavis légal.', tag:'nouveau', accent:'#15803D'},
+  {cat:'immo', catLabel:'Immobilier', title:'Bail mobilité', desc:'Location meublée courte durée sans dépôt de garantie.', tag:'populaire', accent:'#15803D'},
+  {cat:'immo', catLabel:'Immobilier', title:'Bail saisonnier', desc:'Location de courte durée à usage touristique.', tag:'standard', accent:'#15803D'},
+  {cat:'immo', catLabel:'Immobilier', title:'Bail rural', desc:'Location de terres ou bâtiments à usage agricole.', tag:'standard', accent:'#15803D'},
+  {cat:'immo', catLabel:'Immobilier', title:'Compromis de vente', desc:"Avant-contrat engageant vendeur et acheteur avant l'acte notarié.", tag:'populaire', accent:'#15803D'},
+  {cat:'immo', catLabel:'Immobilier', title:'Promesse unilatérale de vente', desc:"Engagement du vendeur seul, avec indemnité d'immobilisation.", tag:'standard', accent:'#15803D'},
+  {cat:'immo', catLabel:'Immobilier', title:'Mandat de gestion locative', desc:"Délégation de la gestion d'un bien à une agence.", tag:'standard', accent:'#15803D'},
+  {cat:'immo', catLabel:'Immobilier', title:'Mandat de vente immobilière', desc:"Autorisation donnée à une agence de vendre un bien.", tag:'standard', accent:'#15803D'},
+  {cat:'immo', catLabel:'Immobilier', title:'Quittance de loyer', desc:'Preuve de paiement du loyer remise au locataire.', tag:'populaire', accent:'#15803D'},
+  {cat:'immo', catLabel:'Immobilier', title:"Avis d'échéance de loyer", desc:'Rappel du montant et de la date de paiement du loyer.', tag:'standard', accent:'#15803D'},
+  {cat:'immo', catLabel:'Immobilier', title:'Préavis de départ (locataire)', desc:"Notification du locataire de son intention de quitter le logement.", tag:'populaire', accent:'#15803D'},
+  {cat:'immo', catLabel:'Immobilier', title:'Autorisation de sous-location', desc:'Accord du propriétaire pour une sous-location partielle ou totale.', tag:'standard', accent:'#15803D'},
+  {cat:'immo', catLabel:'Immobilier', title:"Convention d'occupation précaire", desc:'Occupation temporaire d’un bien sans statut de bail classique.', tag:'nouveau', accent:'#15803D'},
+  {cat:'immo', catLabel:'Immobilier', title:'Contrat de colocation', desc:'Répartition des droits et obligations entre colocataires.', tag:'populaire', accent:'#15803D'},
+  {cat:'immo', catLabel:'Immobilier', title:'Acte de cautionnement', desc:"Engagement d'un garant à couvrir les impayés du locataire.", tag:'standard', accent:'#15803D'},
+  {cat:'immo', catLabel:'Immobilier', title:'Fiche descriptive du logement (annexe bail)', desc:'Description détaillée du bien loué, jointe au contrat.', tag:'standard', accent:'#15803D'},
+  {cat:'immo', catLabel:'Immobilier', title:'Règlement de copropriété (extrait)', desc:'Règles applicables aux parties communes et privatives.', tag:'standard', accent:'#15803D'},
+  {cat:'immo', catLabel:'Immobilier', title:"Procès-verbal d'assemblée générale (copropriété)", desc:'Compte-rendu des décisions votées en assemblée.', tag:'nouveau', accent:'#15803D'},
+  {cat:'immo', catLabel:'Immobilier', title:'Convention de rupture de bail', desc:'Accord entre bailleur et locataire pour mettre fin au bail avant terme.', tag:'standard', accent:'#15803D'},
+
+  // Juridique & Société
+  {cat:'juridique', catLabel:'Juridique & Société', title:'Statuts SAS', desc:'Création de société par actions simplifiée, prête à déposer.', tag:'populaire', accent:'#4F46E5'},
+  {cat:'juridique', catLabel:'Juridique & Société', title:'Statuts SARL / EURL', desc:'Création de société à responsabilité limitée, associé unique ou non.', tag:'standard', accent:'#4F46E5'},
+  {cat:'juridique', catLabel:'Juridique & Société', title:'NDA — Accord de confidentialité', desc:'Protection des informations échangées entre deux parties.', tag:'populaire', accent:'#4F46E5'},
+  {cat:'juridique', catLabel:'Juridique & Société', title:'Procuration', desc:'Délégation de pouvoir pour un acte ou une démarche précise.', tag:'standard', accent:'#4F46E5'},
+  {cat:'juridique', catLabel:'Juridique & Société', title:"Cession de droits d'auteur", desc:"Transfert de propriété intellectuelle sur une création.", tag:'nouveau', accent:'#4F46E5'},
+  {cat:'juridique', catLabel:'Juridique & Société', title:'Statuts SCI', desc:"Création d'une société civile immobilière entre associés.", tag:'populaire', accent:'#4F46E5'},
+  {cat:'juridique', catLabel:'Juridique & Société', title:'Statuts association loi 1901', desc:"Création d'une association à but non lucratif.", tag:'standard', accent:'#4F46E5'},
+  {cat:'juridique', catLabel:'Juridique & Société', title:"Procès-verbal d'assemblée générale", desc:'Compte-rendu officiel des décisions prises par les associés.', tag:'standard', accent:'#4F46E5'},
+  {cat:'juridique', catLabel:'Juridique & Société', title:"Pacte d'associés", desc:'Accord complémentaire aux statuts régissant les relations entre associés.', tag:'populaire', accent:'#4F46E5'},
+  {cat:'juridique', catLabel:'Juridique & Société', title:'Cession de parts sociales', desc:'Transfert de parts d’une société entre associés ou vers un tiers.', tag:'standard', accent:'#4F46E5'},
+  {cat:'juridique', catLabel:'Juridique & Société', title:'Cession de fonds de commerce', desc:'Vente d’une activité commerciale avec sa clientèle.', tag:'standard', accent:'#4F46E5'},
+  {cat:'juridique', catLabel:'Juridique & Société', title:"Convention de compte courant d'associé", desc:"Formalisation d'une avance de fonds d'un associé à sa société.", tag:'standard', accent:'#4F46E5'},
+  {cat:'juridique', catLabel:'Juridique & Société', title:'Contrat de licence de marque', desc:"Autorisation d'exploitation d'une marque déposée.", tag:'standard', accent:'#4F46E5'},
+  {cat:'juridique', catLabel:'Juridique & Société', title:'Contrat de licence logicielle', desc:"Droit d'utilisation d'un logiciel sous conditions définies.", tag:'standard', accent:'#4F46E5'},
+  {cat:'juridique', catLabel:'Juridique & Société', title:'CGV — Conditions Générales de Vente', desc:"Cadre contractuel applicable à toutes les ventes de l'entreprise.", tag:'populaire', accent:'#4F46E5'},
+  {cat:'juridique', catLabel:'Juridique & Société', title:"CGU — Conditions Générales d'Utilisation", desc:"Règles d'usage d'un site ou d'une application.", tag:'populaire', accent:'#4F46E5'},
+  {cat:'juridique', catLabel:'Juridique & Société', title:'Politique de confidentialité (RGPD)', desc:'Information des utilisateurs sur le traitement de leurs données.', tag:'populaire', accent:'#4F46E5'},
+  {cat:'juridique', catLabel:'Juridique & Société', title:'Accord de traitement des données (DPA)', desc:'Encadrement contractuel de la sous-traitance de données personnelles.', tag:'standard', accent:'#4F46E5'},
+  {cat:'juridique', catLabel:'Juridique & Société', title:'Contrat de partenariat stratégique', desc:'Collaboration long terme entre deux structures.', tag:'standard', accent:'#4F46E5'},
+  {cat:'juridique', catLabel:'Juridique & Société', title:'Contrat de distribution', desc:"Autorisation de revente des produits d'un fournisseur.", tag:'standard', accent:'#4F46E5'},
+  {cat:'juridique', catLabel:'Juridique & Société', title:"Contrat d'agent commercial", desc:'Mandat de représentation commerciale indépendante.', tag:'standard', accent:'#4F46E5'},
+  {cat:'juridique', catLabel:'Juridique & Société', title:'Contrat de franchise', desc:"Exploitation d'une enseigne et d'un savoir-faire sous conditions.", tag:'nouveau', accent:'#4F46E5'},
+  {cat:'juridique', catLabel:'Juridique & Société', title:'Procuration bancaire', desc:"Délégation de gestion d'un compte bancaire à un tiers.", tag:'standard', accent:'#4F46E5'},
+  {cat:'juridique', catLabel:'Juridique & Société', title:'Attestation de domiciliation', desc:"Justificatif d'adresse du siège social d'une entreprise.", tag:'standard', accent:'#4F46E5'},
+
+  // Relances & Litiges
+  {cat:'litiges', catLabel:'Relances & Litiges', title:'Mise en demeure', desc:'Relance formelle avant procédure contentieuse.', tag:'standard', accent:'#DC2626'},
+  {cat:'litiges', catLabel:'Relances & Litiges', title:'Reconnaissance de dette', desc:'Engagement de remboursement daté, signé et opposable.', tag:'standard', accent:'#DC2626'},
+  {cat:'litiges', catLabel:'Relances & Litiges', title:"Attestation sur l'honneur", desc:'Déclaration certifiée sur un fait précis, à usage administratif.', tag:'nouveau', accent:'#DC2626'},
+  {cat:'litiges', catLabel:'Relances & Litiges', title:'Relance amiable (1er niveau)', desc:'Premier rappel courtois avant escalade.', tag:'standard', accent:'#DC2626'},
+  {cat:'litiges', catLabel:'Relances & Litiges', title:'Relance avant contentieux', desc:'Dernier rappel formel avant action en justice.', tag:'populaire', accent:'#DC2626'},
+  {cat:'litiges', catLabel:'Relances & Litiges', title:'Lettre de résiliation', desc:"Notification de fin de contrat à l'autre partie.", tag:'standard', accent:'#DC2626'},
+  {cat:'litiges', catLabel:'Relances & Litiges', title:'Contestation de facture', desc:"Désaccord formel sur le contenu ou le montant d'une facture.", tag:'standard', accent:'#DC2626'},
+  {cat:'litiges', catLabel:'Relances & Litiges', title:'Demande de remboursement', desc:"Réclamation d'une somme indûment versée ou d'un produit défectueux.", tag:'standard', accent:'#DC2626'},
+  {cat:'litiges', catLabel:'Relances & Litiges', title:'Plainte pour non-paiement', desc:"Signalement formel d'un impayé auprès des autorités compétentes.", tag:'nouveau', accent:'#DC2626'},
+  {cat:'litiges', catLabel:'Relances & Litiges', title:'Protocole d’accord transactionnel', desc:'Règlement amiable d’un litige entre deux parties.', tag:'populaire', accent:'#DC2626'},
+  {cat:'litiges', catLabel:'Relances & Litiges', title:'Constat de médiation', desc:'Compte-rendu d’une résolution de conflit par un tiers médiateur.', tag:'standard', accent:'#DC2626'},
+  {cat:'litiges', catLabel:'Relances & Litiges', title:'Déclaration de sinistre', desc:"Notification d'un dommage à son assureur.", tag:'standard', accent:'#DC2626'},
+  {cat:'litiges', catLabel:'Relances & Litiges', title:'Courrier de mise en conformité', desc:"Demande de correction d'un manquement contractuel ou réglementaire.", tag:'standard', accent:'#DC2626'},
+  {cat:'litiges', catLabel:'Relances & Litiges', title:'Notification de rupture de contrat', desc:"Information officielle de la fin anticipée d'un contrat.", tag:'standard', accent:'#DC2626'},
+
+  // Particuliers & Vie quotidienne
+  {cat:'particuliers', catLabel:'Particuliers & Vie quotidienne', title:"Résiliation d'abonnement", desc:'Mettre fin à un abonnement (téléphonie, salle de sport, streaming...).', tag:'populaire', accent:'#0891B2'},
+  {cat:'particuliers', catLabel:'Particuliers & Vie quotidienne', title:'Procuration pour évènement familial', desc:'Délégation ponctuelle pour représenter une personne (mariage, obsèques...).', tag:'standard', accent:'#0891B2'},
+  {cat:'particuliers', catLabel:'Particuliers & Vie quotidienne', title:'Autorisation parentale de sortie du territoire', desc:"Document requis pour qu'un mineur voyage seul à l'étranger.", tag:'populaire', accent:'#0891B2'},
+  {cat:'particuliers', catLabel:'Particuliers & Vie quotidienne', title:"Attestation d'hébergement", desc:'Preuve qu’une personne est hébergée gratuitement à une adresse.', tag:'populaire', accent:'#0891B2'},
+  {cat:'particuliers', catLabel:'Particuliers & Vie quotidienne', title:'Décharge de responsabilité', desc:"Renoncement à un recours en cas d'incident lors d'une activité.", tag:'standard', accent:'#0891B2'},
+  {cat:'particuliers', catLabel:'Particuliers & Vie quotidienne', title:'Contrat de prêt entre particuliers', desc:"Formalisation d'un prêt d'argent avec échéancier de remboursement.", tag:'populaire', accent:'#0891B2'},
+  {cat:'particuliers', catLabel:'Particuliers & Vie quotidienne', title:'Convention de prêt à usage (comodat)', desc:'Prêt gratuit d’un bien avec obligation de restitution.', tag:'standard', accent:'#0891B2'},
+  {cat:'particuliers', catLabel:'Particuliers & Vie quotidienne', title:'Contrat de vente entre particuliers (véhicule)', desc:'Cession d’un véhicule d’occasion avec état et prix convenus.', tag:'populaire', accent:'#0891B2'},
+  {cat:'particuliers', catLabel:'Particuliers & Vie quotidienne', title:'Certificat de cession de véhicule', desc:"Formulaire officiel de transfert de propriété d'un véhicule.", tag:'standard', accent:'#0891B2'},
+  {cat:'particuliers', catLabel:'Particuliers & Vie quotidienne', title:'Reçu de paiement', desc:'Justificatif remis après un paiement en espèces ou virement.', tag:'standard', accent:'#0891B2'},
+  {cat:'particuliers', catLabel:'Particuliers & Vie quotidienne', title:"Contrat de garde d'animaux", desc:"Modalités de garde ponctuelle d'un animal de compagnie.", tag:'nouveau', accent:'#0891B2'},
+  {cat:'particuliers', catLabel:'Particuliers & Vie quotidienne', title:'Contrat de babysitting régulier', desc:'Encadrement d’enfants à domicile avec horaires définis.', tag:'standard', accent:'#0891B2'},
+  {cat:'particuliers', catLabel:'Particuliers & Vie quotidienne', title:'Convention de covoiturage régulier', desc:'Partage de frais de trajet entre plusieurs personnes.', tag:'nouveau', accent:'#0891B2'},
+  {cat:'particuliers', catLabel:'Particuliers & Vie quotidienne', title:'Contrat de location de matériel entre particuliers', desc:"Prêt payant d'un objet ou équipement pour une durée définie.", tag:'standard', accent:'#0891B2'},
+  {cat:'particuliers', catLabel:'Particuliers & Vie quotidienne', title:'Attestation sur l’honneur de non-imposition', desc:"Déclaration certifiant l'absence de revenus imposables.", tag:'standard', accent:'#0891B2'},
+  {cat:'particuliers', catLabel:'Particuliers & Vie quotidienne', title:'Lettre de donation manuelle', desc:"Formalisation écrite d'un don d'argent ou de bien entre particuliers.", tag:'standard', accent:'#0891B2'},
+  {cat:'particuliers', catLabel:'Particuliers & Vie quotidienne', title:'Contrat de colocation meublée', desc:'Partage d’un logement meublé entre plusieurs colocataires.', tag:'standard', accent:'#0891B2'},
+  {cat:'particuliers', catLabel:'Particuliers & Vie quotidienne', title:'Demande de délai de paiement (particulier)', desc:"Sollicitation d'un échéancier pour régler une dette personnelle.", tag:'standard', accent:'#0891B2'},
+];
+DOCS.forEach((d, i) => d.id = i);
+
+const CAT_COUNTS = DOCS.reduce((acc, d) => { acc[d.cat] = (acc[d.cat] || 0) + 1; return acc; }, {});
+document.querySelectorAll('.cat-item').forEach(item => {
+  const countEl = item.querySelector('.cat-count');
+  if (countEl) countEl.textContent = item.dataset.cat === 'tous' ? DOCS.length : (CAT_COUNTS[item.dataset.cat] || 0);
+});
+
+const CAT_TITLES = {
+  tous: 'Tous les modèles', freelance: 'Freelance & Devis', travail: 'Contrats de travail',
+  immo: 'Immobilier', juridique: 'Juridique & Société', litiges: 'Relances & Litiges',
+  particuliers: 'Particuliers & Vie quotidienne'
+};
+
+function docThumb(doc, tagHtml) {
+  return `<div class="doc-thumb">
+    ${tagHtml}
+    <button type="button" class="doc-preview-btn" onclick="event.stopPropagation(); previewModel(${doc.id})" title="Aperçu du modèle">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
+    </button>
+    <div class="paper" style="--accent:${doc.accent}">
+      <div class="ln" style="top:14px;width:60%"></div>
+      <div class="ln" style="top:24px;width:75%"></div>
+      <div class="ln" style="top:34px;width:50%"></div>
+      <div class="ln" style="top:50px;width:70%"></div>
+      <div class="ln" style="top:60px;width:65%"></div>
+      <div class="ln" style="top:70px;width:55%"></div>
+      <div class="sig"></div>
+    </div>
+  </div>`;
+}
+const TAG_LABEL = { populaire: '⚡ Populaire', nouveau: '✨ Nouveau', standard: 'Standard' };
+
+function renderCard(doc) {
+  const tagStyle = doc.tag === 'populaire' ? ` style="background:${doc.accent}1a;color:${doc.accent}"` : '';
+  const tagHtml = `<span class="tier-tag ${doc.tag}"${tagStyle}>${TAG_LABEL[doc.tag]}</span>`;
+  return `<div class="doc-card">
+    ${docThumb(doc, tagHtml)}
+    <div class="doc-body">
+      <div class="doc-cat">${doc.catLabel}</div>
+      <div class="doc-title">${doc.title}</div>
+      <div class="doc-desc">${doc.desc}</div>
+      <button type="button" class="doc-btn" onclick="openModelForm(${doc.id})">Utiliser ce modèle →</button>
+    </div>
+  </div>`;
+}
+
+let currentCat = 'tous';
+let currentQuery = '';
+const SORT_MODES = ['Les plus utilisés', 'Alphabétique (A-Z)', 'Nouveautés'];
+let sortIdx = 0;
+
+function cycleSortMode() {
+  sortIdx = (sortIdx + 1) % SORT_MODES.length;
+  document.getElementById('sortLabel').textContent = SORT_MODES[sortIdx];
+  render();
+}
+
+function sortDocs(list) {
+  const mode = SORT_MODES[sortIdx];
+  const copy = [...list];
+  if (mode === 'Alphabétique (A-Z)') {
+    copy.sort((a, b) => a.title.localeCompare(b.title, 'fr'));
+  } else if (mode === 'Nouveautés') {
+    copy.sort((a, b) => (b.tag === 'nouveau') - (a.tag === 'nouveau'));
+  } else {
+    copy.sort((a, b) => (b.tag === 'populaire') - (a.tag === 'populaire'));
+  }
+  return copy;
+}
+
+function render() {
+  let list = DOCS.filter(d => currentCat === 'tous' || d.cat === currentCat);
+  if (currentQuery.trim()) {
+    const q = currentQuery.toLowerCase();
+    list = list.filter(d => d.title.toLowerCase().includes(q) || d.desc.toLowerCase().includes(q) || d.catLabel.toLowerCase().includes(q));
+  }
+  list = sortDocs(list);
+  const grid = document.getElementById('docGrid');
+  const empty = document.getElementById('emptyState');
+  grid.innerHTML = list.map(renderCard).join('');
+  empty.classList.toggle('show', list.length === 0);
+  document.getElementById('resultsTitle').textContent = CAT_TITLES[currentCat];
+  document.getElementById('resultsCount').textContent = list.length + (list.length > 1 ? ' modèles' : ' modèle');
+
+  requestAnimationFrame(() => {
+    const io = new IntersectionObserver(entries => {
+      entries.forEach((e, i) => {
+        if (e.isIntersecting) { setTimeout(() => e.target.classList.add('in'), i * 25); io.unobserve(e.target); }
+      });
+    }, { threshold: .1 });
+    grid.querySelectorAll('.doc-card').forEach(c => io.observe(c));
+  });
+}
+
+document.getElementById('catList').addEventListener('click', (e) => {
+  const item = e.target.closest('.cat-item');
+  if (!item) return;
+  document.querySelectorAll('.cat-item').forEach(i => i.classList.remove('active'));
+  item.classList.add('active');
+  currentCat = item.dataset.cat;
+  render();
+});
+
+document.getElementById('searchInput').addEventListener('input', (e) => {
+  currentQuery = e.target.value;
+  render();
+});
+
+/* ── MODALE DE REMPLISSAGE ── */
+let currentModalDoc = null;
+const MODAL_FIELD_IDS = ['fPartie1', 'fPartie2', 'fDate', 'fMontant', 'fAdresse', 'fObjet'];
+const SAMPLE = {
+  partie1: 'Jean Dupont — JD Conseil',
+  partie2: 'Société Martin SARL',
+  montant: '2 400 €',
+  adresse: '12 rue de la Paix, 75002 Paris'
+};
+
+function fillModal(id, useSample) {
+  currentModalDoc = DOCS.find(d => d.id === id);
+  if (!currentModalDoc) return;
+  document.getElementById('modalCat').textContent = currentModalDoc.catLabel;
+  document.getElementById('modalTitle').textContent = currentModalDoc.title;
+  document.querySelector('#thumbPage .tp-accent').style.background = currentModalDoc.accent;
+  document.getElementById('fPartie1').value = useSample ? SAMPLE.partie1 : '';
+  document.getElementById('fPartie2').value = useSample ? SAMPLE.partie2 : '';
+  document.getElementById('fDate').value = new Date().toISOString().slice(0, 10);
+  document.getElementById('fMontant').value = useSample ? SAMPLE.montant : '';
+  document.getElementById('fAdresse').value = useSample ? SAMPLE.adresse : '';
+  document.getElementById('fObjet').value = currentModalDoc.desc;
+  updatePreview();
+  document.getElementById('modalOverlay').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function openModelForm(id) { fillModal(id, false); }
+function previewModel(id) { fillModal(id, true); }
+
+function closeModelForm() {
+  document.getElementById('modalOverlay').classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+function fieldOrPlaceholder(val, placeholder) {
+  return val && val.trim() ? val : `<span class="preview-field-empty">${placeholder}</span>`;
+}
+
+function updatePreview() {
+  if (!currentModalDoc) return;
+  const p1 = document.getElementById('fPartie1').value;
+  const p2 = document.getElementById('fPartie2').value;
+  const date = document.getElementById('fDate').value;
+  const montant = document.getElementById('fMontant').value;
+  const adresse = document.getElementById('fAdresse').value;
+  const objet = document.getElementById('fObjet').value;
+  const dateFmt = date ? new Date(date + 'T00:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
+
+  document.getElementById('previewDoc').innerHTML = `
+    <h3>${currentModalDoc.title}</h3>
+    <div class="preview-meta">${currentModalDoc.catLabel} · ${dateFmt || 'date à définir'}</div>
+    <p><strong>Entre :</strong> ${fieldOrPlaceholder(p1, 'partie 1 à renseigner')}</p>
+    <p style="margin-top:.5rem"><strong>Et :</strong> ${fieldOrPlaceholder(p2, 'partie 2 à renseigner')}</p>
+    ${adresse.trim() ? `<p style="margin-top:.5rem"><strong>Adresse :</strong> ${adresse}</p>` : ''}
+    <p style="margin-top:1rem">${objet.trim() ? objet.replace(/\n/g, '<br>') : `<span class="preview-field-empty">Décris l'objet du document...</span>`}</p>
+    ${montant.trim() ? `<p style="margin-top:1rem"><strong>Montant :</strong> ${montant}</p>` : ''}
+    <div class="preview-sig">
+      <span>${fieldOrPlaceholder(p1, 'Partie 1')}<br>Signature</span>
+      <span style="text-align:right">${fieldOrPlaceholder(p2, 'Partie 2')}<br>Signature</span>
+    </div>
+  `;
+}
+
+MODAL_FIELD_IDS.forEach(id => document.getElementById(id).addEventListener('input', updatePreview));
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModelForm(); });
+
+render();
+</script>
+</body>
+</html>
