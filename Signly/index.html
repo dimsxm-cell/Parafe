@@ -1030,11 +1030,13 @@ button:active, .nav-cta:active, .btn-upload:active, .btn-sign-doc:active {
 
 .form-group { margin-bottom: 1.1rem; }
 .form-group label { display: block; font-size: .78rem; font-weight: 600; color: var(--grayl); margin-bottom: .4rem; }
-.form-group input, .form-group textarea {
+.form-group input, .form-group textarea, .form-group select {
   width: 100%; padding: .6rem .75rem; border: 1px solid var(--bd); border-radius: .6rem;
   font-size: .85rem; font-family: inherit; color: var(--ivory); background: #fff; resize: vertical;
 }
-.form-group input:focus, .form-group textarea:focus { outline: none; border-color: var(--champ); }
+.form-group input:focus, .form-group textarea:focus, .form-group select:focus { outline: none; border-color: var(--champ); }
+.form-group input[type="checkbox"] { width: auto; }
+.field-title-tag { font-size: .62rem; font-weight: 700; color: var(--gray); margin-right: .35rem; white-space: nowrap; }
 .form-row { display: flex; gap: .75rem; }
 .form-row .form-group { flex: 1; }
 .doc-render-wrap {
@@ -1307,9 +1309,59 @@ button:active, .nav-cta:active, .btn-upload:active, .btn-sign-doc:active {
         </div>
 
         <div class="panel-title" id="fieldSettingsTitle" style="display:none;margin-top:1rem">Paramètres du texte</div>
-        <div class="form-group" id="fieldSettingsPanel" style="display:none">
-          <label>Taille du texte</label>
-          <input type="number" id="fsFontSize" min="8" max="48" step="1">
+        <div id="fieldSettingsPanel" style="display:none">
+          <div class="form-group">
+            <label>Étiquette</label>
+            <input type="text" id="fsLabel" placeholder="Étiquette de champ">
+          </div>
+          <div class="form-group">
+            <label>Ajouter du texte</label>
+            <input type="text" id="fsValue" placeholder="Ajouter du texte au champ">
+          </div>
+          <div class="form-group" style="display:flex;gap:.4rem">
+            <button type="button" class="field-type-btn" id="fsBold" style="flex:1;font-weight:800" onclick="toggleStyleProp('bold')">B</button>
+            <button type="button" class="field-type-btn" id="fsItalic" style="flex:1;font-style:italic" onclick="toggleStyleProp('italic')">I</button>
+            <button type="button" class="field-type-btn" id="fsAlignLeft" style="flex:1" onclick="setFieldAlign('left')">⟵</button>
+            <button type="button" class="field-type-btn" id="fsAlignCenter" style="flex:1" onclick="setFieldAlign('center')">≡</button>
+            <button type="button" class="field-type-btn" id="fsAlignRight" style="flex:1" onclick="setFieldAlign('right')">⟶</button>
+          </div>
+          <div class="form-group">
+            <label>Fonte</label>
+            <select id="fsFontFamily">
+              <option value="default">Défaut</option>
+              <option value="serif">Serif</option>
+              <option value="mono">Mono</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Taille de la police</label>
+            <input type="number" id="fsFontSize" min="8" max="48" step="1">
+          </div>
+          <div class="form-group">
+            <label>Description</label>
+            <textarea id="fsDescription" rows="2" placeholder="Description"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Afficher le titre (facultatif)</label>
+            <input type="text" id="fsDisplayTitle" placeholder="Titre affiché sur le document">
+          </div>
+          <div class="form-group">
+            <label>Validation</label>
+            <select id="fsValidation">
+              <option value="none">Aucun</option>
+              <option value="email">Email</option>
+              <option value="number">Numérique</option>
+              <option value="phone">Téléphone</option>
+            </select>
+          </div>
+          <div class="form-group" style="display:flex;align-items:center;gap:.5rem">
+            <input type="checkbox" id="fsRequired" style="width:auto">
+            <label style="margin:0">Champ obligatoire</label>
+          </div>
+          <div class="form-group" style="display:flex;align-items:center;gap:.5rem">
+            <input type="checkbox" id="fsReadOnly" style="width:auto">
+            <label style="margin:0">Lecture seule</label>
+          </div>
         </div>
       </div>
     </div>
@@ -2085,6 +2137,16 @@ function addField(type, xPct, yPct) {
     yPct: clamp(yPct, 2, 98),
     value: defaultValueForType(type),
     fontSize: RESIZABLE_FIELD_TYPES.includes(type) ? 12 : null,
+    label: '',
+    bold: false,
+    italic: false,
+    align: 'center',
+    fontFamily: 'default',
+    description: '',
+    displayTitle: '',
+    validation: 'none',
+    required: true,
+    readOnly: false,
     extra: type === 'signature' ? { dataUrl: null } : null,
   };
   fields.push(field);
@@ -2093,6 +2155,8 @@ function addField(type, xPct, yPct) {
   selectField(field);
   return field;
 }
+
+const FONT_FAMILY_MAP = { default: 'inherit', serif: "'Playfair Display', serif", mono: "'JetBrains Mono', monospace" };
 
 // ── SÉLECTION DE CHAMP / PARAMÈTRES DU TEXTE ──────────────
 let selectedField = null;
@@ -2110,21 +2174,132 @@ function renderFieldSettingsPanel() {
     panel.style.display = 'none';
     return;
   }
+  const f = selectedField;
   title.style.display = 'block';
   panel.style.display = 'block';
-  document.getElementById('fsFontSize').value = selectedField.fontSize;
+  document.getElementById('fsLabel').value = f.label;
+  document.getElementById('fsValue').value = f.value;
+  document.getElementById('fsFontSize').value = f.fontSize;
+  document.getElementById('fsFontFamily').value = f.fontFamily;
+  document.getElementById('fsDescription').value = f.description;
+  document.getElementById('fsDisplayTitle').value = f.displayTitle;
+  document.getElementById('fsValidation').value = f.validation;
+  document.getElementById('fsRequired').checked = f.required;
+  document.getElementById('fsReadOnly').checked = f.readOnly;
+  document.getElementById('fsBold').classList.toggle('armed', f.bold);
+  document.getElementById('fsItalic').classList.toggle('armed', f.italic);
+  document.getElementById('fsAlignLeft').classList.toggle('armed', f.align === 'left');
+  document.getElementById('fsAlignCenter').classList.toggle('armed', f.align === 'center');
+  document.getElementById('fsAlignRight').classList.toggle('armed', f.align === 'right');
 }
+
+function fieldInputEl(field) {
+  return document.querySelector(`.placed-field[data-id="${field.id}"] input`);
+}
+
+function applyFieldStyle(field) {
+  const el = fieldInputEl(field);
+  if (!el) return;
+  el.style.fontSize = field.fontSize + 'px';
+  el.style.fontFamily = FONT_FAMILY_MAP[field.fontFamily] || 'inherit';
+  el.style.fontWeight = field.bold ? '800' : 'normal';
+  el.style.fontStyle = field.italic ? 'italic' : 'normal';
+  el.style.textAlign = field.align;
+  el.readOnly = field.readOnly;
+  el.placeholder = field.label || FIELD_LABELS[field.type];
+}
+
+function refreshTitleTag(field) {
+  const wrap = document.querySelector(`.placed-field[data-id="${field.id}"]`);
+  if (!wrap) return;
+  let tag = wrap.querySelector('.field-title-tag');
+  if (field.displayTitle) {
+    if (!tag) {
+      tag = document.createElement('span');
+      tag.className = 'field-title-tag';
+      wrap.insertBefore(tag, wrap.firstChild);
+    }
+    tag.textContent = field.displayTitle;
+  } else if (tag) {
+    tag.remove();
+  }
+}
+
+document.getElementById('fsLabel').addEventListener('input', (e) => {
+  if (!selectedField) return;
+  selectedField.label = e.target.value;
+  applyFieldStyle(selectedField);
+});
+
+document.getElementById('fsValue').addEventListener('input', (e) => {
+  if (!selectedField) return;
+  selectedField.value = e.target.value;
+  const el = fieldInputEl(selectedField);
+  if (el) el.value = e.target.value;
+  updatePlacedItemPreview(selectedField.id);
+});
 
 document.getElementById('fsFontSize').addEventListener('input', (e) => {
   if (!selectedField) return;
-  const size = clamp(parseInt(e.target.value, 10) || 12, 8, 48);
-  selectedField.fontSize = size;
-  applyFieldFontSize(selectedField);
+  selectedField.fontSize = clamp(parseInt(e.target.value, 10) || 12, 8, 48);
+  applyFieldStyle(selectedField);
 });
 
-function applyFieldFontSize(field) {
-  const el = document.querySelector(`.placed-field[data-id="${field.id}"] input`);
-  if (el) el.style.fontSize = field.fontSize + 'px';
+document.getElementById('fsFontFamily').addEventListener('change', (e) => {
+  if (!selectedField) return;
+  selectedField.fontFamily = e.target.value;
+  applyFieldStyle(selectedField);
+});
+
+document.getElementById('fsDescription').addEventListener('input', (e) => {
+  if (!selectedField) return;
+  selectedField.description = e.target.value;
+  const el = fieldInputEl(selectedField);
+  if (el) el.title = e.target.value;
+});
+
+document.getElementById('fsDisplayTitle').addEventListener('input', (e) => {
+  if (!selectedField) return;
+  selectedField.displayTitle = e.target.value;
+  refreshTitleTag(selectedField);
+});
+
+document.getElementById('fsValidation').addEventListener('change', (e) => {
+  if (!selectedField) return;
+  selectedField.validation = e.target.value;
+});
+
+document.getElementById('fsRequired').addEventListener('change', (e) => {
+  if (!selectedField) return;
+  selectedField.required = e.target.checked;
+});
+
+document.getElementById('fsReadOnly').addEventListener('change', (e) => {
+  if (!selectedField) return;
+  selectedField.readOnly = e.target.checked;
+  applyFieldStyle(selectedField);
+});
+
+function toggleStyleProp(prop) {
+  if (!selectedField) return;
+  selectedField[prop] = !selectedField[prop];
+  renderFieldSettingsPanel();
+  applyFieldStyle(selectedField);
+}
+
+function setFieldAlign(align) {
+  if (!selectedField) return;
+  selectedField.align = align;
+  renderFieldSettingsPanel();
+  applyFieldStyle(selectedField);
+}
+
+function validateFieldValue(field, value) {
+  if (!value) return true;
+  if (field.validation === 'email') return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+  if (field.validation === 'number') return /^-?\d+([.,]\d+)?$/.test(value);
+  if (field.validation === 'phone') return /^[+\d][\d\s().-]{6,}$/.test(value);
+  return true;
 }
 
 function renderField(field) {
@@ -2139,6 +2314,10 @@ function renderField(field) {
   overlay.appendChild(el);
   wireFieldInner(el, field);
   attachFieldBehavior(el, field);
+  if (RESIZABLE_FIELD_TYPES.includes(field.type)) {
+    applyFieldStyle(field);
+    refreshTitleTag(field);
+  }
 }
 
 function buildFieldInnerHtml(field) {
@@ -2167,8 +2346,12 @@ function wireFieldInner(el, field) {
     input.addEventListener('input', () => {
       field.value = input.value;
       updatePlacedItemPreview(field.id);
+      if (selectedField === field) document.getElementById('fsValue').value = field.value;
     });
     input.addEventListener('focus', () => selectField(field));
+    input.addEventListener('blur', () => {
+      input.style.borderBottom = validateFieldValue(field, field.value) ? '' : '1.5px solid #DC2626';
+    });
   }
   const checkbox = el.querySelector('.field-checkbox');
   if (checkbox) {
@@ -2384,6 +2567,11 @@ async function drawFieldOnPage(page, field, x, y, font) {
 
 async function downloadFilledPdf() {
   if (!docState || docState.sourceType === 'docx' || docState.sourceType === 'unsupported') return;
+
+  const missingRequired = fields.filter(f => f.required && !f.value);
+  if (missingRequired.length && !confirm(`${missingRequired.length} champ(s) obligatoire(s) non rempli(s). Télécharger quand même ?`)) {
+    return;
+  }
 
   let pdfDoc;
   if (docState.sourceType === 'pdf') {
