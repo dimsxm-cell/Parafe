@@ -2466,16 +2466,47 @@ function toggleFaq(btn) {
 }
 
 // ── CTA ──────────────────────────────────────────────────
+const WEB3FORMS_ACCESS_KEY = '220448f1-5621-4640-94a0-e042f4e409ec';
+
 function scrollToCTA() { document.querySelector('.cta-section').scrollIntoView({ behavior: 'smooth' }); }
-function handleCTA() {
-  const email = document.getElementById('cta-email').value.trim();
+
+async function handleCTA() {
+  const emailInput = document.getElementById('cta-email');
+  const email = emailInput.value.trim();
   if (!email || !email.includes('@') || !email.includes('.')) {
-    document.getElementById('cta-email').style.borderColor = '#EF4444';
-    setTimeout(() => document.getElementById('cta-email').style.borderColor = '', 2000);
+    emailInput.style.borderColor = '#EF4444';
+    setTimeout(() => emailInput.style.borderColor = '', 2000);
     return;
   }
-  document.getElementById('email-form').style.display = 'none';
-  document.getElementById('cta-success').style.display = 'block';
+
+  const btn = document.querySelector('#email-form .btn-cta');
+  const originalLabel = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Envoi...';
+
+  try {
+    const res = await fetch('https://api.web3forms.com/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({
+        access_key: WEB3FORMS_ACCESS_KEY,
+        subject: 'Nouvelle inscription beta Parafé',
+        from_name: 'Parafé — Beta',
+        email,
+      }),
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.message || 'Échec de l\'envoi');
+
+    document.getElementById('email-form').style.display = 'none';
+    document.getElementById('cta-success').style.display = 'block';
+  } catch (err) {
+    console.error('Inscription beta — échec :', err);
+    btn.disabled = false;
+    btn.textContent = originalLabel;
+    emailInput.style.borderColor = '#EF4444';
+    setTimeout(() => emailInput.style.borderColor = '', 2000);
+  }
 }
 
 
