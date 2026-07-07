@@ -1258,7 +1258,7 @@ button:active, .nav-cta:active, .btn-upload:active, .btn-sign-doc:active {
   <div class="modal">
     <div class="modal-topbar">
       <div class="modal-topbar-left">
-        <div class="modal-brand">Signly<span>PDF</span></div>
+        <div class="modal-brand">Paraf<span>é</span></div>
         <div class="modal-doc-name" id="modalTitle"></div>
         <div id="modalCat" style="display:none">Document importé</div>
         <span class="modal-status-badge">Draft</span>
@@ -1304,6 +1304,12 @@ button:active, .nav-cta:active, .btn-upload:active, .btn-sign-doc:active {
         <div class="panel-title">Champs placés</div>
         <div class="placed-list" id="placedList">
           <div class="placed-empty">Aucun champ placé pour l'instant.</div>
+        </div>
+
+        <div class="panel-title" id="fieldSettingsTitle" style="display:none;margin-top:1rem">Paramètres du texte</div>
+        <div class="form-group" id="fieldSettingsPanel" style="display:none">
+          <label>Taille du texte</label>
+          <input type="number" id="fsFontSize" min="8" max="48" step="1">
         </div>
       </div>
     </div>
@@ -1853,6 +1859,7 @@ async function openUploadForm(file) {
   fields = [];
   fieldIdSeq = 1;
   disarmField();
+  selectField(null);
   document.getElementById('modalTitle').textContent = prettifyFileName(file.name);
   renderPlacedList();
   document.getElementById('modalOverlay').classList.add('show');
@@ -2067,6 +2074,8 @@ function defaultValueForType(type) {
   return '';
 }
 
+const RESIZABLE_FIELD_TYPES = ['text', 'initials', 'date', 'number'];
+
 function addField(type, xPct, yPct) {
   const field = {
     id: fieldIdSeq++,
@@ -2075,12 +2084,47 @@ function addField(type, xPct, yPct) {
     xPct: clamp(xPct, 2, 98),
     yPct: clamp(yPct, 2, 98),
     value: defaultValueForType(type),
+    fontSize: RESIZABLE_FIELD_TYPES.includes(type) ? 12 : null,
     extra: type === 'signature' ? { dataUrl: null } : null,
   };
   fields.push(field);
   renderField(field);
   renderPlacedList();
+  selectField(field);
   return field;
+}
+
+// ── SÉLECTION DE CHAMP / PARAMÈTRES DU TEXTE ──────────────
+let selectedField = null;
+
+function selectField(field) {
+  selectedField = field;
+  renderFieldSettingsPanel();
+}
+
+function renderFieldSettingsPanel() {
+  const title = document.getElementById('fieldSettingsTitle');
+  const panel = document.getElementById('fieldSettingsPanel');
+  if (!selectedField || !RESIZABLE_FIELD_TYPES.includes(selectedField.type)) {
+    title.style.display = 'none';
+    panel.style.display = 'none';
+    return;
+  }
+  title.style.display = 'block';
+  panel.style.display = 'block';
+  document.getElementById('fsFontSize').value = selectedField.fontSize;
+}
+
+document.getElementById('fsFontSize').addEventListener('input', (e) => {
+  if (!selectedField) return;
+  const size = clamp(parseInt(e.target.value, 10) || 12, 8, 48);
+  selectedField.fontSize = size;
+  applyFieldFontSize(selectedField);
+});
+
+function applyFieldFontSize(field) {
+  const el = document.querySelector(`.placed-field[data-id="${field.id}"] input`);
+  if (el) el.style.fontSize = field.fontSize + 'px';
 }
 
 function renderField(field) {
@@ -2101,11 +2145,11 @@ function buildFieldInnerHtml(field) {
   switch (field.type) {
     case 'text':
     case 'initials':
-      return `<input type="text" placeholder="${FIELD_LABELS[field.type]}" value="${field.value.replace(/"/g, '&quot;')}" style="border:none;background:transparent;font:inherit;color:inherit;text-align:center;width:100%;outline:none">`;
+      return `<input type="text" placeholder="${FIELD_LABELS[field.type]}" value="${field.value.replace(/"/g, '&quot;')}" style="border:none;background:transparent;font-family:inherit;font-size:${field.fontSize}px;color:inherit;text-align:center;width:100%;outline:none">`;
     case 'number':
-      return `<input type="number" placeholder="Nombre" value="${field.value.replace(/"/g, '&quot;')}" style="border:none;background:transparent;font:inherit;color:inherit;text-align:center;width:70px;outline:none">`;
+      return `<input type="number" placeholder="Nombre" value="${field.value.replace(/"/g, '&quot;')}" style="border:none;background:transparent;font-family:inherit;font-size:${field.fontSize}px;color:inherit;text-align:center;width:70px;outline:none">`;
     case 'date':
-      return `<input type="date" value="${field.value}" style="border:none;background:transparent;font:inherit;color:inherit;outline:none">`;
+      return `<input type="date" value="${field.value}" style="border:none;background:transparent;font-family:inherit;font-size:${field.fontSize}px;color:inherit;outline:none">`;
     case 'checkbox':
       return `<span class="field-checkbox" style="cursor:pointer">${field.value === 'true' ? '☑' : '☐'}</span>`;
     case 'signature':
@@ -2124,6 +2168,7 @@ function wireFieldInner(el, field) {
       field.value = input.value;
       updatePlacedItemPreview(field.id);
     });
+    input.addEventListener('focus', () => selectField(field));
   }
   const checkbox = el.querySelector('.field-checkbox');
   if (checkbox) {
@@ -2146,6 +2191,7 @@ function wireFieldInner(el, field) {
 function attachFieldBehavior(el, field) {
   el.addEventListener('pointerdown', (e) => {
     if (e.target.closest('input, .field-checkbox, .field-sig-placeholder, img, .field-del')) return;
+    selectField(field);
     e.preventDefault();
     const overlay = document.querySelector('#docRenderWrap .field-overlay');
     const overlayRect = overlay.getBoundingClientRect();
@@ -2178,6 +2224,7 @@ function deleteField(id, event) {
   fields = fields.filter(f => f.id !== id);
   const el = document.querySelector(`.placed-field[data-id="${id}"]`);
   if (el) el.remove();
+  if (selectedField && selectedField.id === id) selectField(null);
   renderPlacedList();
 }
 
@@ -2330,7 +2377,7 @@ async function drawFieldOnPage(page, field, x, y, font) {
     text = new Date(text + 'T00:00:00').toLocaleDateString('fr-FR');
   }
   if (!text) return;
-  const size = 11;
+  const size = field.fontSize || 11;
   const width = font.widthOfTextAtSize(text, size);
   page.drawText(text, { x: x - width / 2, y: y - size / 2.5, size, font });
 }
