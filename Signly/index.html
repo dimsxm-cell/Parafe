@@ -370,6 +370,9 @@ nav.scrolled {
   font-family: 'JetBrains Mono', monospace; font-size: .65rem; color: #EAB308;
   white-space: nowrap;
 }
+.badge-pending.badge-signed {
+  background: rgba(21,128,61,.12); border-color: rgba(21,128,61,.3); color: var(--green);
+}
 .demo-meta { display: flex; gap: .75rem; margin-bottom: .75rem; }
 .demo-meta-item {
   flex: 1; background: var(--slate); border-radius: .65rem; padding: .6rem .75rem;
@@ -1088,14 +1091,6 @@ button:active, .nav-cta:active, .btn-upload:active, .btn-sign-doc:active {
 }
 .btn-ai-detect:hover { background: rgba(79,70,229,.1); }
 .btn-ai-detect:disabled { opacity: .6; cursor: default; }
-.placed-list { display: flex; flex-direction: column; gap: .4rem; }
-.placed-item {
-  display: flex; align-items: center; justify-content: space-between; gap: .5rem;
-  padding: .45rem .6rem; background: var(--slate); border-radius: .5rem; font-size: .76rem; color: var(--ivory);
-}
-.placed-item button { background: none; border: none; color: var(--gray); font-size: .8rem; cursor: pointer; }
-.placed-item button:hover { color: #DC2626; }
-.placed-empty { font-size: .75rem; color: var(--gray); font-style: italic; }
 .thumb-page.active { outline: 2px solid var(--champ); }
 .field-type-btn:disabled, .btn-ai-detect:disabled { opacity: .45; cursor: not-allowed; }
 .sig-popover {
@@ -1303,11 +1298,6 @@ button:active, .nav-cta:active, .btn-upload:active, .btn-sign-doc:active {
         </div>
         <button type="button" class="btn-ai-detect" id="btnAiDetect" onclick="detectWithAI()">✨ Détecter avec l'IA</button>
 
-        <div class="panel-title">Champs placés</div>
-        <div class="placed-list" id="placedList">
-          <div class="placed-empty">Aucun champ placé pour l'instant.</div>
-        </div>
-
         <div class="panel-title" id="fieldSettingsTitle" style="display:none;margin-top:1rem">Paramètres du texte</div>
         <div id="fieldSettingsPanel" style="display:none">
           <div class="form-group">
@@ -1484,8 +1474,10 @@ button:active, .nav-cta:active, .btn-upload:active, .btn-sign-doc:active {
           </div>
         </div>
         <div class="demo-sign">
-          <div class="demo-sign-label">Bon pour accord</div>
-          <button class="btn-sign" id="btnDemoSign" onclick="signDemoDoc()">✍ Signer le devis</button>
+          <div class="demo-sign-label" id="demoSignLabel">Bon pour accord</div>
+          <div id="demoSignArea">
+            <button class="btn-sign" id="btnDemoSign" onclick="startDemoSign()">✍ Signer le devis</button>
+          </div>
         </div>
       </div>
     </div>
@@ -1913,7 +1905,6 @@ async function openUploadForm(file) {
   disarmField();
   selectField(null);
   document.getElementById('modalTitle').textContent = prettifyFileName(file.name);
-  renderPlacedList();
   document.getElementById('modalOverlay').classList.add('show');
   document.body.style.overflow = 'hidden';
   await loadDocumentIntoModal(file);
@@ -2151,7 +2142,6 @@ function addField(type, xPct, yPct) {
   };
   fields.push(field);
   renderField(field);
-  renderPlacedList();
   selectField(field);
   return field;
 }
@@ -2236,7 +2226,6 @@ document.getElementById('fsValue').addEventListener('input', (e) => {
   selectedField.value = e.target.value;
   const el = fieldInputEl(selectedField);
   if (el) el.value = e.target.value;
-  updatePlacedItemPreview(selectedField.id);
 });
 
 document.getElementById('fsFontSize').addEventListener('input', (e) => {
@@ -2345,7 +2334,6 @@ function wireFieldInner(el, field) {
   if (input) {
     input.addEventListener('input', () => {
       field.value = input.value;
-      updatePlacedItemPreview(field.id);
       if (selectedField === field) document.getElementById('fsValue').value = field.value;
     });
     input.addEventListener('focus', () => selectField(field));
@@ -2358,7 +2346,6 @@ function wireFieldInner(el, field) {
     checkbox.addEventListener('click', () => {
       field.value = field.value === 'true' ? 'false' : 'true';
       checkbox.textContent = field.value === 'true' ? '☑' : '☐';
-      updatePlacedItemPreview(field.id);
     });
   }
   const sigPlaceholder = el.querySelector('.field-sig-placeholder');
@@ -2408,7 +2395,6 @@ function deleteField(id, event) {
   const el = document.querySelector(`.placed-field[data-id="${id}"]`);
   if (el) el.remove();
   if (selectedField && selectedField.id === id) selectField(null);
-  renderPlacedList();
 }
 
 // ── PAD DE SIGNATURE ──────────────────────────────────────
@@ -2469,7 +2455,6 @@ function openSignaturePopover(field) {
       el.insertAdjacentHTML('afterbegin', buildFieldInnerHtml(field));
       wireFieldInner(el, field);
     }
-    updatePlacedItemPreview(field.id);
   });
 
   const closeOnOutsideClick = (e) => {
@@ -2479,34 +2464,6 @@ function openSignaturePopover(field) {
     }
   };
   setTimeout(() => document.addEventListener('click', closeOnOutsideClick, true), 0);
-}
-
-// ── SIDEBAR — CHAMPS PLACÉS ───────────────────────────────
-function fieldPreviewText(field) {
-  if (field.type === 'signature') return field.extra && field.extra.dataUrl ? 'Signé' : 'Non signé';
-  if (field.type === 'checkbox') return field.value === 'true' ? 'Coché' : 'Non coché';
-  return field.value || '—';
-}
-
-function renderPlacedList() {
-  const list = document.getElementById('placedList');
-  if (!fields.length) {
-    list.innerHTML = '<div class="placed-empty">Aucun champ placé pour l\'instant.</div>';
-    return;
-  }
-  list.innerHTML = fields.map(f => `
-    <div class="placed-item" data-id="${f.id}">
-      <span>${FIELD_ICONS[f.type]} ${FIELD_LABELS[f.type]} · p.${f.page} — ${fieldPreviewText(f)}</span>
-      <button type="button" onclick="deleteField(${f.id})">✕</button>
-    </div>
-  `).join('');
-}
-
-function updatePlacedItemPreview(id) {
-  const field = fields.find(f => f.id === id);
-  if (!field) return;
-  const row = document.querySelector(`.placed-item[data-id="${id}"] span`);
-  if (row) row.textContent = `${FIELD_ICONS[field.type]} ${FIELD_LABELS[field.type]} · p.${field.page} — ${fieldPreviewText(field)}`;
 }
 
 // ── DÉTECTION IA (SIMULATION) ──────────────────────────────
@@ -2608,18 +2565,66 @@ async function downloadFilledPdf() {
   triggerDownload(bytes, prettifyFileName(currentUploadFile.name) + '-rempli.pdf');
 }
 
-// ── DÉMO PRODUIT — bouton "Signer le devis" ─────────────
-function signDemoDoc() {
+// ── DÉMO PRODUIT — module signature ──────────────────────
+function startDemoSign() {
+  document.getElementById('demoSignLabel').textContent = 'Dessine ta signature ci-dessous';
+  document.getElementById('demoSignArea').innerHTML = `
+    <canvas id="demoSigCanvas" width="460" height="110" style="width:100%;max-width:460px;height:110px;background:#fff;border:1px solid var(--bd);border-radius:.6rem;touch-action:none;cursor:crosshair;display:block;margin:0 auto"></canvas>
+    <div style="display:flex;gap:.6rem;justify-content:center;margin-top:.75rem">
+      <button type="button" class="btn-outline" onclick="clearDemoSig()">Effacer</button>
+      <button type="button" class="btn-sign" onclick="confirmDemoSign()">Valider la signature</button>
+    </div>
+  `;
+
+  const canvas = document.getElementById('demoSigCanvas');
+  const ctx = canvas.getContext('2d');
+  ctx.lineWidth = 2.2;
+  ctx.lineCap = 'round';
+  ctx.strokeStyle = '#12172B';
+  let drawing = false;
+
+  const pos = (e) => {
+    const r = canvas.getBoundingClientRect();
+    return { x: (e.clientX - r.left) * (canvas.width / r.width), y: (e.clientY - r.top) * (canvas.height / r.height) };
+  };
+  canvas.addEventListener('pointerdown', (e) => {
+    drawing = true;
+    const p = pos(e);
+    ctx.beginPath();
+    ctx.moveTo(p.x, p.y);
+  });
+  canvas.addEventListener('pointermove', (e) => {
+    if (!drawing) return;
+    const p = pos(e);
+    ctx.lineTo(p.x, p.y);
+    ctx.stroke();
+  });
+  canvas.addEventListener('pointerup', () => drawing = false);
+  canvas.addEventListener('pointerleave', () => drawing = false);
+}
+
+function clearDemoSig() {
+  const canvas = document.getElementById('demoSigCanvas');
+  canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+}
+
+function confirmDemoSign() {
+  const canvas = document.getElementById('demoSigCanvas');
+  const dataUrl = canvas.toDataURL('image/png');
+  const dateStr = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+
+  document.getElementById('demoSignLabel').textContent = 'Bon pour accord';
+  document.getElementById('demoSignArea').innerHTML = `
+    <img src="${dataUrl}" alt="Signature" style="height:50px;display:block;margin:0 auto .5rem">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--green)">✓ Signé électroniquement le ${dateStr}</div>
+  `;
+
   const badge = document.getElementById('demoBadge');
-  const btn = document.getElementById('btnDemoSign');
   badge.textContent = '✓ Signé';
-  badge.style.background = 'rgba(21,128,61,.12)';
-  badge.style.borderColor = 'rgba(21,128,61,.3)';
-  badge.style.color = 'var(--green)';
-  btn.textContent = '✓ Devis signé';
-  btn.disabled = true;
-  btn.style.opacity = '.6';
-  btn.style.cursor = 'default';
+  badge.classList.add('badge-signed');
+
+  const sidebarItem = document.querySelector('.demo-item.active');
+  if (sidebarItem) sidebarItem.textContent = 'DEV-047 · Signé ✓';
 }
 
 // ── INTERSECTION OBSERVER ────────────────────────────────

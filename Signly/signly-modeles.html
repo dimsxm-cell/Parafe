@@ -202,11 +202,11 @@ nav {
 
 .form-group { margin-bottom:1.1rem; }
 .form-group label { display:block; font-size:.78rem; font-weight:600; color:var(--grayl); margin-bottom:.4rem; }
-.form-group input, .form-group textarea {
+.form-group input, .form-group textarea, .form-group select {
   width:100%; padding:.6rem .75rem; border:1px solid var(--bd); border-radius:.6rem;
   font-size:.85rem; font-family:inherit; color:var(--ivory); background:#fff; resize:vertical;
 }
-.form-group input:focus, .form-group textarea:focus { outline:none; border-color:var(--champ); }
+.form-group input:focus, .form-group textarea:focus, .form-group select:focus { outline:none; border-color:var(--champ); }
 .form-row { display:flex; gap:.75rem; }
 .form-row .form-group { flex:1; }
 .preview-doc {
@@ -343,32 +343,7 @@ nav {
       </div>
       <div class="modal-fields-panel">
         <div class="panel-title">Champs du document</div>
-        <div class="form-group">
-          <label>Partie 1 — vous / votre société</label>
-          <input type="text" id="fPartie1" placeholder="Ex: Jean Dupont — JD Conseil">
-        </div>
-        <div class="form-group">
-          <label>Partie 2 — client / autre partie</label>
-          <input type="text" id="fPartie2" placeholder="Ex: Société Martin SARL">
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label>Date</label>
-            <input type="date" id="fDate">
-          </div>
-          <div class="form-group">
-            <label>Montant (optionnel)</label>
-            <input type="text" id="fMontant" placeholder="Ex: 1 500 €">
-          </div>
-        </div>
-        <div class="form-group">
-          <label>Adresse (optionnel)</label>
-          <input type="text" id="fAdresse" placeholder="Ex: 12 rue de la Paix, 75002 Paris">
-        </div>
-        <div class="form-group">
-          <label>Objet / Description</label>
-          <textarea id="fObjet" rows="4"></textarea>
-        </div>
+        <div id="fieldsContainer"></div>
       </div>
     </div>
   </div>
@@ -619,28 +594,141 @@ document.getElementById('searchInput').addEventListener('input', (e) => {
   render();
 });
 
-/* ── MODALE DE REMPLISSAGE ── */
+/* ── MODALE DE REMPLISSAGE — champs par catégorie ── */
 let currentModalDoc = null;
-const MODAL_FIELD_IDS = ['fPartie1', 'fPartie2', 'fDate', 'fMontant', 'fAdresse', 'fObjet'];
-const SAMPLE = {
-  partie1: 'Jean Dupont — JD Conseil',
-  partie2: 'Société Martin SARL',
-  montant: '2 400 €',
-  adresse: '12 rue de la Paix, 75002 Paris'
+
+// Chaque schéma : liste de champs, ou de paires [champA, champB] affichées côte à côte.
+// Invariant : exactement un champ type:'date' et un champ type:'textarea' par schéma.
+const CATEGORY_FIELDS = {
+  freelance: [
+    { id: 'fPartie1', label: 'Vous / votre société', type: 'text', placeholder: 'Ex: Jean Dupont — JD Conseil' },
+    { id: 'fPartie2', label: 'Client / société cliente', type: 'text', placeholder: 'Ex: Société Martin SARL' },
+    [
+      { id: 'fDate', label: 'Date', type: 'date' },
+      { id: 'fMontant', label: 'Montant (optionnel)', type: 'text', placeholder: 'Ex: 1 500 € HT' },
+    ],
+    { id: 'fAdresse', label: 'Adresse de facturation (optionnel)', type: 'text', placeholder: 'Ex: 12 rue de la Paix, 75002 Paris' },
+    { id: 'fObjet', label: 'Objet / Description', type: 'textarea' },
+  ],
+  travail: [
+    { id: 'fEmployeur', label: 'Employeur', type: 'text', placeholder: 'Ex: JD Conseil SARL' },
+    { id: 'fSalarie', label: 'Salarié(e)', type: 'text', placeholder: 'Ex: Jean Dupont' },
+    [
+      { id: 'fPoste', label: 'Poste / Fonction', type: 'text', placeholder: 'Ex: Développeur web' },
+      { id: 'fDateDebut', label: "Date d'effet / début", type: 'date' },
+    ],
+    [
+      { id: 'fSalaire', label: 'Rémunération (optionnel)', type: 'text', placeholder: 'Ex: 2 800 € brut/mois' },
+      { id: 'fLieu', label: 'Lieu de travail (optionnel)', type: 'text', placeholder: 'Ex: Paris (75)' },
+    ],
+    { id: 'fObjet', label: 'Objet / Précisions', type: 'textarea' },
+  ],
+  immo: [
+    { id: 'fBailleur', label: 'Bailleur / Vendeur', type: 'text', placeholder: 'Ex: Jean Dupont' },
+    { id: 'fLocataire', label: 'Locataire / Acheteur', type: 'text', placeholder: 'Ex: Société Martin SARL' },
+    { id: 'fAdresseBien', label: 'Adresse du bien', type: 'text', placeholder: 'Ex: 12 rue de la Paix, 75002 Paris' },
+    [
+      { id: 'fDate', label: "Date d'effet", type: 'date' },
+      { id: 'fMontant', label: 'Loyer / Prix', type: 'text', placeholder: 'Ex: 950 €/mois' },
+    ],
+    { id: 'fDepot', label: 'Dépôt de garantie (optionnel)', type: 'text', placeholder: 'Ex: 950 €' },
+    { id: 'fObjet', label: 'Objet / Précisions', type: 'textarea' },
+  ],
+  juridique: [
+    { id: 'fSociete', label: 'Société / Dénomination', type: 'text', placeholder: 'Ex: JD Conseil SAS' },
+    { id: 'fFormeJuridique', label: 'Forme juridique', type: 'select', options: ['SAS', 'SARL / EURL', 'SCI', 'Association loi 1901', 'Autre'] },
+    [
+      { id: 'fCapital', label: 'Capital social (optionnel)', type: 'text', placeholder: 'Ex: 10 000 €' },
+      { id: 'fSiege', label: 'Siège social', type: 'text', placeholder: 'Ex: 12 rue de la Paix, 75002 Paris' },
+    ],
+    { id: 'fPartie2', label: 'Partie concernée / cocontractant', type: 'text', placeholder: 'Ex: Société Martin SARL' },
+    { id: 'fDate', label: 'Date', type: 'date' },
+    { id: 'fObjet', label: 'Objet / Précisions', type: 'textarea' },
+  ],
+  litiges: [
+    { id: 'fExpediteur', label: 'Partie créancière / expéditeur', type: 'text', placeholder: 'Ex: Jean Dupont — JD Conseil' },
+    { id: 'fDestinataire', label: 'Partie débitrice / destinataire', type: 'text', placeholder: 'Ex: Société Martin SARL' },
+    [
+      { id: 'fDate', label: "Date de l'incident / facture concernée", type: 'date' },
+      { id: 'fMontant', label: 'Montant en litige (optionnel)', type: 'text', placeholder: 'Ex: 2 400 €' },
+    ],
+    { id: 'fDelai', label: 'Délai accordé (optionnel)', type: 'text', placeholder: 'Ex: 8 jours à compter de réception' },
+    { id: 'fObjet', label: 'Objet / Précisions', type: 'textarea' },
+  ],
+  particuliers: [
+    { id: 'fPartie1', label: 'Vous', type: 'text', placeholder: 'Ex: Jean Dupont' },
+    { id: 'fPartie2', label: 'Autre personne', type: 'text', placeholder: 'Ex: Marie Durand' },
+    [
+      { id: 'fDate', label: 'Date', type: 'date' },
+      { id: 'fMontant', label: 'Montant (optionnel)', type: 'text', placeholder: 'Ex: 300 €' },
+    ],
+    { id: 'fObjet', label: 'Objet / Précisions', type: 'textarea' },
+  ],
 };
+
+// Les 2 champs utilisés pour le bloc signature en bas de l'aperçu, par catégorie.
+const CATEGORY_SIG_FIELDS = {
+  freelance: ['fPartie1', 'fPartie2'],
+  travail: ['fEmployeur', 'fSalarie'],
+  immo: ['fBailleur', 'fLocataire'],
+  juridique: ['fSociete', 'fPartie2'],
+  litiges: ['fExpediteur', 'fDestinataire'],
+  particuliers: ['fPartie1', 'fPartie2'],
+};
+
+// Valeurs utilisées uniquement par previewModel() (icône œil) — jamais pour le champ date.
+const CATEGORY_SAMPLE = {
+  freelance: { fPartie1: 'Jean Dupont — JD Conseil', fPartie2: 'Société Martin SARL', fMontant: '2 400 €', fAdresse: '12 rue de la Paix, 75002 Paris' },
+  travail: { fEmployeur: 'JD Conseil SARL', fSalarie: 'Jean Dupont', fPoste: 'Développeur web', fSalaire: '2 800 € brut/mois', fLieu: 'Paris (75)' },
+  immo: { fBailleur: 'Jean Dupont', fLocataire: 'Société Martin SARL', fAdresseBien: '12 rue de la Paix, 75002 Paris', fMontant: '950 €/mois', fDepot: '950 €' },
+  juridique: { fSociete: 'JD Conseil SAS', fFormeJuridique: 'SAS', fCapital: '10 000 €', fSiege: '12 rue de la Paix, 75002 Paris', fPartie2: 'Société Martin SARL' },
+  litiges: { fExpediteur: 'Jean Dupont — JD Conseil', fDestinataire: 'Société Martin SARL', fMontant: '2 400 €', fDelai: '8 jours à compter de réception' },
+  particuliers: { fPartie1: 'Jean Dupont', fPartie2: 'Marie Durand', fMontant: '300 €' },
+};
+
+function flattenSchema(schema) {
+  return schema.flatMap(entry => Array.isArray(entry) ? entry : [entry]);
+}
+
+function renderField(f) {
+  if (f.type === 'textarea') {
+    return `<div class="form-group"><label>${f.label}</label><textarea id="${f.id}" rows="4"></textarea></div>`;
+  }
+  if (f.type === 'select') {
+    const opts = ['<option value="">Sélectionner...</option>', ...f.options.map(o => `<option value="${o}">${o}</option>`)].join('');
+    return `<div class="form-group"><label>${f.label}</label><select id="${f.id}">${opts}</select></div>`;
+  }
+  const type = f.type === 'date' ? 'date' : 'text';
+  const placeholder = f.placeholder ? ` placeholder="${f.placeholder}"` : '';
+  return `<div class="form-group"><label>${f.label}</label><input type="${type}" id="${f.id}"${placeholder}></div>`;
+}
+
+function renderFieldsPanel(schema) {
+  return schema.map(entry => {
+    if (Array.isArray(entry)) return `<div class="form-row">${entry.map(renderField).join('')}</div>`;
+    return renderField(entry);
+  }).join('');
+}
 
 function fillModal(id, useSample) {
   currentModalDoc = DOCS.find(d => d.id === id);
   if (!currentModalDoc) return;
+  const schema = CATEGORY_FIELDS[currentModalDoc.cat];
+  const sample = CATEGORY_SAMPLE[currentModalDoc.cat] || {};
+
   document.getElementById('modalCat').textContent = currentModalDoc.catLabel;
   document.getElementById('modalTitle').textContent = currentModalDoc.title;
   document.querySelector('#thumbPage .tp-accent').style.background = currentModalDoc.accent;
-  document.getElementById('fPartie1').value = useSample ? SAMPLE.partie1 : '';
-  document.getElementById('fPartie2').value = useSample ? SAMPLE.partie2 : '';
-  document.getElementById('fDate').value = new Date().toISOString().slice(0, 10);
-  document.getElementById('fMontant').value = useSample ? SAMPLE.montant : '';
-  document.getElementById('fAdresse').value = useSample ? SAMPLE.adresse : '';
-  document.getElementById('fObjet').value = currentModalDoc.desc;
+  document.getElementById('fieldsContainer').innerHTML = renderFieldsPanel(schema);
+
+  flattenSchema(schema).forEach(f => {
+    const el = document.getElementById(f.id);
+    if (f.type === 'date') el.value = new Date().toISOString().slice(0, 10);
+    else if (f.type === 'textarea') el.value = currentModalDoc.desc;
+    else el.value = useSample ? (sample[f.id] || '') : '';
+    el.addEventListener(f.type === 'select' ? 'change' : 'input', updatePreview);
+  });
+
   updatePreview();
   document.getElementById('modalOverlay').classList.add('show');
   document.body.style.overflow = 'hidden';
@@ -660,30 +748,41 @@ function fieldOrPlaceholder(val, placeholder) {
 
 function updatePreview() {
   if (!currentModalDoc) return;
-  const p1 = document.getElementById('fPartie1').value;
-  const p2 = document.getElementById('fPartie2').value;
-  const date = document.getElementById('fDate').value;
-  const montant = document.getElementById('fMontant').value;
-  const adresse = document.getElementById('fAdresse').value;
-  const objet = document.getElementById('fObjet').value;
+  const schema = CATEGORY_FIELDS[currentModalDoc.cat];
+  const fields = flattenSchema(schema);
+  const dateField = fields.find(f => f.type === 'date');
+  const objetField = fields.find(f => f.type === 'textarea');
+  const date = document.getElementById(dateField.id).value;
   const dateFmt = date ? new Date(date + 'T00:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
+  const objet = document.getElementById(objetField.id).value;
+
+  const bodyHtml = fields
+    .filter(f => f.id !== dateField.id && f.id !== objetField.id)
+    .map(f => {
+      const value = document.getElementById(f.id).value;
+      const label = f.label.replace(/\s*\(optionnel\)/, '');
+      return `<p style="margin-top:.5rem"><strong>${label} :</strong> ${fieldOrPlaceholder(value, `${label.toLowerCase()} à renseigner`)}</p>`;
+    })
+    .join('');
+
+  const [sigId1, sigId2] = CATEGORY_SIG_FIELDS[currentModalDoc.cat];
+  const sigLabel1 = fields.find(f => f.id === sigId1).label;
+  const sigLabel2 = fields.find(f => f.id === sigId2).label;
+  const sigVal1 = document.getElementById(sigId1).value;
+  const sigVal2 = document.getElementById(sigId2).value;
 
   document.getElementById('previewDoc').innerHTML = `
     <h3>${currentModalDoc.title}</h3>
     <div class="preview-meta">${currentModalDoc.catLabel} · ${dateFmt || 'date à définir'}</div>
-    <p><strong>Entre :</strong> ${fieldOrPlaceholder(p1, 'partie 1 à renseigner')}</p>
-    <p style="margin-top:.5rem"><strong>Et :</strong> ${fieldOrPlaceholder(p2, 'partie 2 à renseigner')}</p>
-    ${adresse.trim() ? `<p style="margin-top:.5rem"><strong>Adresse :</strong> ${adresse}</p>` : ''}
+    ${bodyHtml}
     <p style="margin-top:1rem">${objet.trim() ? objet.replace(/\n/g, '<br>') : `<span class="preview-field-empty">Décris l'objet du document...</span>`}</p>
-    ${montant.trim() ? `<p style="margin-top:1rem"><strong>Montant :</strong> ${montant}</p>` : ''}
     <div class="preview-sig">
-      <span>${fieldOrPlaceholder(p1, 'Partie 1')}<br>Signature</span>
-      <span style="text-align:right">${fieldOrPlaceholder(p2, 'Partie 2')}<br>Signature</span>
+      <span>${fieldOrPlaceholder(sigVal1, sigLabel1)}<br>Signature</span>
+      <span style="text-align:right">${fieldOrPlaceholder(sigVal2, sigLabel2)}<br>Signature</span>
     </div>
   `;
 }
 
-MODAL_FIELD_IDS.forEach(id => document.getElementById(id).addEventListener('input', updatePreview));
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModelForm(); });
 
 render();
