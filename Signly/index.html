@@ -1958,6 +1958,11 @@ supabaseClient.auth.onAuthStateChange((_event, session) => updateAuthUI(session 
 supabaseClient.auth.getSession().then(({ data }) => updateAuthUI(data.session ? data.session.user : null));
 
 // ── MES DOCUMENTS ─────────────────────────────────────────
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
 async function openDocsListModal() {
   document.getElementById('docsListModalOverlay').classList.add('show');
   document.body.style.overflow = 'hidden';
@@ -1968,7 +1973,7 @@ async function openDocsListModal() {
     .select('id, title, status, created_at')
     .order('created_at', { ascending: false });
   if (error) {
-    bodyEl.innerHTML = `<div class="docs-list-empty">Erreur : ${error.message}</div>`;
+    bodyEl.innerHTML = `<div class="docs-list-empty">Erreur : ${escapeHtml(error.message)}</div>`;
     return;
   }
   if (!data.length) {
@@ -1977,7 +1982,7 @@ async function openDocsListModal() {
   }
   bodyEl.innerHTML = data.map(doc => `
     <div class="docs-list-item">
-      <span>${doc.title}</span>
+      <span>${escapeHtml(doc.title)}</span>
       <span>${doc.status === 'completed' ? '✓ Envoyé' : 'Brouillon'} · ${new Date(doc.created_at).toLocaleDateString('fr-FR')}</span>
     </div>
   `).join('');
@@ -2072,7 +2077,7 @@ function closeUploadForm() {
 }
 
 async function persistDocument(status) {
-  if (!currentUser || !currentUploadFile) return;
+  if (!currentUser || !currentUploadFile) return true;
   try {
     let storagePath = docState && docState.storagePath;
     if (!storagePath) {
@@ -2099,15 +2104,23 @@ async function persistDocument(status) {
       if (error) throw error;
       currentDocumentId = data.id;
     }
+    return true;
   } catch (err) {
     console.error('Sauvegarde du document — échec :', err);
+    return false;
   }
 }
 
-function submitUploadForm() {
-  persistDocument('completed');
+async function submitUploadForm() {
+  const saved = await persistDocument('completed');
   closeUploadForm();
   const btn = document.getElementById('btnSignDoc');
+  if (!saved) {
+    const status = document.getElementById('previewStatus');
+    status.textContent = '✗ Échec de l\'enregistrement. Réessaie.';
+    status.style.color = '#EF4444';
+    return;
+  }
   btn.disabled = true;
   btn.style.opacity = '.6';
   btn.textContent = '✓ Formulaire rempli et envoyé';
