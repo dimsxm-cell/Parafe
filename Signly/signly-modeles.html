@@ -742,8 +742,14 @@ function closeModelForm() {
   document.body.style.overflow = '';
 }
 
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
 function fieldOrPlaceholder(val, placeholder) {
-  return val && val.trim() ? val : `<span class="preview-field-empty">${placeholder}</span>`;
+  return val && val.trim() ? escapeHtml(val) : `<span class="preview-field-empty">${placeholder}</span>`;
 }
 
 function updatePreview() {
@@ -775,7 +781,7 @@ function updatePreview() {
     <h3>${currentModalDoc.title}</h3>
     <div class="preview-meta">${currentModalDoc.catLabel} · ${dateFmt || 'date à définir'}</div>
     ${bodyHtml}
-    <p style="margin-top:1rem">${objet.trim() ? objet.replace(/\n/g, '<br>') : `<span class="preview-field-empty">Décris l'objet du document...</span>`}</p>
+    <p style="margin-top:1rem">${objet.trim() ? escapeHtml(objet).replace(/\n/g, '<br>') : `<span class="preview-field-empty">Décris l'objet du document...</span>`}</p>
     <div class="preview-sig">
       <span>${fieldOrPlaceholder(sigVal1, sigLabel1)}<br>Signature</span>
       <span style="text-align:right">${fieldOrPlaceholder(sigVal2, sigLabel2)}<br>Signature</span>

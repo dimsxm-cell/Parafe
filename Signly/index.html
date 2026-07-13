@@ -982,11 +982,11 @@ button:active, .nav-cta:active, .btn-upload:active, .btn-sign-doc:active {
 /* ══ MODALE — FORMULAIRE DIGITAL GÉNÉRÉ DEPUIS UN UPLOAD — style éditeur PDF ══ */
 .modal-overlay {
   position: fixed; inset: 0; z-index: 300; display: none; align-items: center; justify-content: center;
-  background: rgba(18,23,43,.55); backdrop-filter: blur(3px); padding: .75rem;
+  background: rgba(18,23,43,.55); backdrop-filter: blur(3px); padding: .25rem;
 }
 .modal-overlay.show { display: flex; }
 .modal {
-  background: #fff; border-radius: 1rem; width: 97vw; max-width: 1700px; height: 95vh;
+  background: #fff; border-radius: 1rem; width: 99.5vw; max-width: none; height: 99vh;
   overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 30px 80px -20px rgba(18,23,43,.35);
 }
 .modal-topbar {
@@ -1017,7 +1017,7 @@ button:active, .nav-cta:active, .btn-upload:active, .btn-sign-doc:active {
 .btn-send:hover { background: var(--champl); }
 
 .modal-work { display: flex; flex: 1; min-height: 0; }
-.modal-thumbs { width: 82px; flex-shrink: 0; background: var(--slate); border-right: 1px solid var(--bd); padding: 1rem .5rem; overflow-y: auto; }
+.modal-thumbs { width: 140px; flex-shrink: 0; background: var(--slate); border-right: 1px solid var(--bd); padding: 1rem .75rem; overflow-y: auto; }
 .thumb-page {
   width: 100%; aspect-ratio: 3/4; background: #fff; border: 1px solid var(--bd); border-radius: .4rem;
   box-shadow: 0 2px 6px rgba(18,23,43,.1); padding: .35rem; display: flex; flex-direction: column; gap: .22rem; overflow: hidden;
@@ -1028,7 +1028,7 @@ button:active, .nav-cta:active, .btn-upload:active, .btn-sign-doc:active {
 
 .modal-canvas { flex: 1; background: #E7E9F1; padding: 2rem 1.5rem; overflow-y: auto; display: flex; justify-content: center; }
 
-.modal-fields-panel { width: 290px; flex-shrink: 0; background: #fff; border-left: 1px solid var(--bd); padding: 1.25rem 1.4rem; overflow-y: auto; }
+.modal-fields-panel { width: 360px; flex-shrink: 0; background: #fff; border-left: 1px solid var(--bd); padding: 1.5rem 1.75rem; overflow-y: auto; }
 .panel-title { font-family: 'JetBrains Mono', monospace; font-size: .66rem; text-transform: uppercase; letter-spacing: .6px; color: var(--gray); margin-bottom: 1.1rem; }
 
 .form-group { margin-bottom: 1.1rem; }
@@ -1048,12 +1048,12 @@ button:active, .nav-cta:active, .btn-upload:active, .btn-sign-doc:active {
 }
 .doc-render-wrap canvas, .doc-render-wrap img { display: block; max-width: 100%; height: auto; }
 .render-loading {
-  width: 560px; max-width: 100%; aspect-ratio: 3/4; display: flex; align-items: center; justify-content: center;
+  width: 900px; max-width: 100%; aspect-ratio: 3/4; display: flex; align-items: center; justify-content: center;
   font-family: 'JetBrains Mono', monospace; font-size: .78rem; color: var(--gray); background: #fff;
 }
 .docx-render {
-  width: 560px; max-width: 100%; min-height: 640px; padding: 2.5rem 2.75rem; background: #fff;
-  font-size: .85rem; line-height: 1.6; color: var(--ivory); overflow-wrap: break-word;
+  width: 900px; max-width: 100%; min-height: 900px; padding: 3rem 3.5rem; background: #fff;
+  font-size: .95rem; line-height: 1.6; color: var(--ivory); overflow-wrap: break-word;
 }
 .render-unsupported {
   width: 560px; max-width: 100%; min-height: 400px; display: flex; flex-direction: column; align-items: center;
@@ -1827,9 +1827,9 @@ button:active, .nav-cta:active, .btn-upload:active, .btn-sign-doc:active {
   </div>
 </footer>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.7.0/mammoth.browser.min.js"></script>
-<script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" integrity="sha384-/1qUCSGwTur9vjf/z9lmu/eCUYbpOTgSjmpbMQZ1/CtX2v/WcAIKqRv+U1DUCG6e" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.7.0/mammoth.browser.min.js" integrity="sha384-XsDe9keS+6qnJvogt5RdvXf7GBLzUYIb8TiVP3pHI4/oBwvxwdkCMiesydsYgRdF" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js" integrity="sha384-weMABwrltA6jWR8DDe9Jp5blk+tZQh7ugpCsF3JwSA53WZM9/14PjS5LAJNHNjAI" crossorigin="anonymous"></script>
 <script>
 if (window.pdfjsLib) {
   pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -2041,7 +2041,7 @@ async function renderPdfPage(n) {
   const canvas = wrap.querySelector('canvas');
   const page = await docState.pdfDoc.getPage(n);
   const vp1 = page.getViewport({ scale: 1 });
-  const targetWidth = Math.min(document.getElementById('modalCanvas').clientWidth - 48, 720);
+  const targetWidth = document.getElementById('modalCanvas').clientWidth - 48;
   const scale = targetWidth / vp1.width;
   const viewport = page.getViewport({ scale });
   canvas.width = viewport.width;
