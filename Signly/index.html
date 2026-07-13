@@ -1111,6 +1111,20 @@ button:active, .nav-cta:active, .btn-upload:active, .btn-sign-doc:active {
   .modal-fields-panel { width: 100%; border-left: none; border-top: 1px solid var(--bd); }
   .modal-canvas { padding: 1.25rem; }
 }
+.auth-modal {
+  background: #fff; border-radius: 1rem; width: 100%; max-width: 380px;
+  padding: 1.5rem; box-shadow: 0 30px 80px -20px rgba(18,23,43,.35);
+}
+.auth-modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+.auth-modal-tabs { display: flex; gap: .5rem; margin-bottom: 1.1rem; border-bottom: 1px solid var(--bd); }
+.auth-tab { flex: 1; background: none; border: none; padding: .6rem 0; font-size: .82rem; font-weight: 600; color: var(--gray); border-bottom: 2px solid transparent; }
+.auth-tab.active { color: var(--champ); border-bottom-color: var(--champ); }
+.auth-error { background: rgba(239,68,68,.08); color: #EF4444; font-size: .78rem; padding: .6rem .75rem; border-radius: .5rem; margin-bottom: 1rem; }
+.nav-auth-btn { background: none; border: none; font-size: .82rem; font-weight: 600; color: var(--ivory); opacity: .72; margin-right: .75rem; }
+.nav-auth-btn:hover { opacity: 1; }
+.docs-list-modal { background: #fff; border-radius: 1rem; width: 100%; max-width: 460px; max-height: 70vh; overflow-y: auto; padding: 1.5rem; box-shadow: 0 30px 80px -20px rgba(18,23,43,.35); }
+.docs-list-item { display: flex; justify-content: space-between; align-items: center; padding: .75rem 0; border-bottom: 1px solid var(--bd); font-size: .85rem; }
+.docs-list-empty { color: var(--gray); font-size: .85rem; text-align: center; padding: 1.5rem 0; }
 </style>
 <script defer src="/_vercel/insights/script.js"></script>
 </head>
@@ -1125,6 +1139,8 @@ button:active, .nav-cta:active, .btn-upload:active, .btn-sign-doc:active {
     <a href="#tarifs">Tarifs</a>
     <a href="#faq">FAQ</a>
   </div>
+  <button type="button" class="nav-auth-btn" id="navAuthBtn" onclick="handleNavAuthClick()">Se connecter</button>
+  <button type="button" class="nav-auth-btn" id="navDocsBtn" onclick="openDocsListModal()" style="display:none">Mes documents</button>
   <button class="nav-cta" onclick="scrollToCTA()">Rejoindre la beta</button>
 </nav>
 
@@ -1355,6 +1371,41 @@ button:active, .nav-cta:active, .btn-upload:active, .btn-sign-doc:active {
         </div>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- MODALE AUTHENTIFICATION -->
+<div class="modal-overlay" id="authModalOverlay" onclick="if(event.target===this) closeAuthModal()">
+  <div class="auth-modal">
+    <div class="auth-modal-header">
+      <div class="modal-brand">Paraf<span>é</span></div>
+      <button type="button" class="modal-icon-btn" title="Fermer" onclick="closeAuthModal()">✕</button>
+    </div>
+    <div class="auth-modal-tabs">
+      <button type="button" class="auth-tab active" id="authTabLogin" onclick="setAuthMode('login')">Se connecter</button>
+      <button type="button" class="auth-tab" id="authTabSignup" onclick="setAuthMode('signup')">Créer un compte</button>
+    </div>
+    <div id="authError" class="auth-error" style="display:none"></div>
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" id="authEmail" placeholder="ton@email.fr">
+    </div>
+    <div class="form-group">
+      <label>Mot de passe</label>
+      <input type="password" id="authPassword" placeholder="••••••••" minlength="6">
+    </div>
+    <button type="button" class="btn-primary" id="authSubmitBtn" style="width:100%" onclick="submitAuthForm()">Se connecter</button>
+  </div>
+</div>
+
+<!-- MODALE MES DOCUMENTS -->
+<div class="modal-overlay" id="docsListModalOverlay" onclick="if(event.target===this) closeDocsListModal()">
+  <div class="docs-list-modal">
+    <div class="auth-modal-header">
+      <div class="modal-brand">Mes documents</div>
+      <button type="button" class="modal-icon-btn" title="Fermer" onclick="closeDocsListModal()">✕</button>
+    </div>
+    <div id="docsListBody"><div class="docs-list-empty">Chargement...</div></div>
   </div>
 </div>
 
@@ -1839,6 +1890,72 @@ if (window.pdfjsLib) {
 const SUPABASE_URL = 'https://ahmoujwfmtipiojocsin.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFobW91andmbXRpcGlvam9jc2luIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM5Mzg4NTcsImV4cCI6MjA5OTUxNDg1N30.TYqKA9kBdNULEEeonW1DiLnBvXsqNO7d7j8PVZ-9Yoo';
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// ── AUTHENTIFICATION ─────────────────────────────────────
+let currentUser = null;
+let authMode = 'login';
+
+function openAuthModal(mode) {
+  setAuthMode(mode);
+  document.getElementById('authEmail').value = '';
+  document.getElementById('authPassword').value = '';
+  document.getElementById('authError').style.display = 'none';
+  document.getElementById('authModalOverlay').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+function closeAuthModal() {
+  document.getElementById('authModalOverlay').classList.remove('show');
+  document.body.style.overflow = '';
+}
+function setAuthMode(mode) {
+  authMode = mode;
+  document.getElementById('authTabLogin').classList.toggle('active', mode === 'login');
+  document.getElementById('authTabSignup').classList.toggle('active', mode === 'signup');
+  document.getElementById('authSubmitBtn').textContent = mode === 'login' ? 'Se connecter' : 'Créer un compte';
+  document.getElementById('authError').style.display = 'none';
+}
+async function submitAuthForm() {
+  const email = document.getElementById('authEmail').value.trim();
+  const password = document.getElementById('authPassword').value;
+  const errorEl = document.getElementById('authError');
+  errorEl.style.display = 'none';
+  if (!email || !password) {
+    errorEl.textContent = 'Email et mot de passe requis.';
+    errorEl.style.display = 'block';
+    return;
+  }
+  const btn = document.getElementById('authSubmitBtn');
+  const originalLabel = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Patiente...';
+  const { error } = authMode === 'login'
+    ? await supabaseClient.auth.signInWithPassword({ email, password })
+    : await supabaseClient.auth.signUp({ email, password });
+  btn.disabled = false;
+  btn.textContent = originalLabel;
+  if (error) {
+    errorEl.textContent = error.message;
+    errorEl.style.display = 'block';
+    return;
+  }
+  closeAuthModal();
+}
+function handleNavAuthClick() {
+  if (currentUser) {
+    supabaseClient.auth.signOut();
+  } else {
+    openAuthModal('login');
+  }
+}
+function updateAuthUI(user) {
+  currentUser = user;
+  const navAuthBtn = document.getElementById('navAuthBtn');
+  const navDocsBtn = document.getElementById('navDocsBtn');
+  navAuthBtn.textContent = user ? 'Se déconnecter' : 'Se connecter';
+  navDocsBtn.style.display = user ? 'inline-block' : 'none';
+}
+supabaseClient.auth.onAuthStateChange((_event, session) => updateAuthUI(session ? session.user : null));
+supabaseClient.auth.getSession().then(({ data }) => updateAuthUI(data.session ? data.session.user : null));
 
 // ── NAVBAR SCROLL ────────────────────────────────────────
 window.addEventListener('scroll', () => {
