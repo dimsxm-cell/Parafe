@@ -2012,6 +2012,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 // ── ÉTAT ──────────────────────────────────────────────────
 let currentUploadFile = null;
+let currentDocumentId = null;
 let docState = null;
 let fields = [];
 let fieldIdSeq = 1;
@@ -2022,6 +2023,7 @@ const FIELD_LABELS = { signature: 'Signature', initials: 'Initiales', date: 'Dat
 
 async function openUploadForm(file) {
   currentUploadFile = file;
+  currentDocumentId = null;
   fields = [];
   fieldIdSeq = 1;
   disarmField();
@@ -2039,7 +2041,41 @@ function closeUploadForm() {
   disarmField();
 }
 
+async function persistDocument(status) {
+  if (!currentUser || !currentUploadFile) return;
+  try {
+    let storagePath = docState && docState.storagePath;
+    if (!storagePath) {
+      storagePath = `${currentUser.id}/${Date.now()}_${currentUploadFile.name}`;
+      const { error: uploadError } = await supabaseClient.storage
+        .from('documents')
+        .upload(storagePath, currentUploadFile, { upsert: false });
+      if (uploadError) throw uploadError;
+      if (docState) docState.storagePath = storagePath;
+    }
+    const payload = {
+      user_id: currentUser.id,
+      title: prettifyFileName(currentUploadFile.name),
+      original_filename: currentUploadFile.name,
+      storage_path: storagePath,
+      fields,
+      status,
+    };
+    if (currentDocumentId) {
+      const { error } = await supabaseClient.from('documents').update(payload).eq('id', currentDocumentId);
+      if (error) throw error;
+    } else {
+      const { data, error } = await supabaseClient.from('documents').insert(payload).select('id').single();
+      if (error) throw error;
+      currentDocumentId = data.id;
+    }
+  } catch (err) {
+    console.error('Sauvegarde du document — échec :', err);
+  }
+}
+
 function submitUploadForm() {
+  persistDocument('completed');
   closeUploadForm();
   const btn = document.getElementById('btnSignDoc');
   btn.disabled = true;
