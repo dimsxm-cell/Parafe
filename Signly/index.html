@@ -1957,6 +1957,36 @@ function updateAuthUI(user) {
 supabaseClient.auth.onAuthStateChange((_event, session) => updateAuthUI(session ? session.user : null));
 supabaseClient.auth.getSession().then(({ data }) => updateAuthUI(data.session ? data.session.user : null));
 
+// ── MES DOCUMENTS ─────────────────────────────────────────
+async function openDocsListModal() {
+  document.getElementById('docsListModalOverlay').classList.add('show');
+  document.body.style.overflow = 'hidden';
+  const bodyEl = document.getElementById('docsListBody');
+  bodyEl.innerHTML = '<div class="docs-list-empty">Chargement...</div>';
+  const { data, error } = await supabaseClient
+    .from('documents')
+    .select('id, title, status, created_at')
+    .order('created_at', { ascending: false });
+  if (error) {
+    bodyEl.innerHTML = `<div class="docs-list-empty">Erreur : ${error.message}</div>`;
+    return;
+  }
+  if (!data.length) {
+    bodyEl.innerHTML = '<div class="docs-list-empty">Aucun document enregistré pour l\'instant.</div>';
+    return;
+  }
+  bodyEl.innerHTML = data.map(doc => `
+    <div class="docs-list-item">
+      <span>${doc.title}</span>
+      <span>${doc.status === 'completed' ? '✓ Envoyé' : 'Brouillon'} · ${new Date(doc.created_at).toLocaleDateString('fr-FR')}</span>
+    </div>
+  `).join('');
+}
+function closeDocsListModal() {
+  document.getElementById('docsListModalOverlay').classList.remove('show');
+  document.body.style.overflow = '';
+}
+
 // ── NAVBAR SCROLL ────────────────────────────────────────
 window.addEventListener('scroll', () => {
   document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 8);
