@@ -982,11 +982,11 @@ button:active, .nav-cta:active, .btn-upload:active, .btn-sign-doc:active {
 /* ══ MODALE — FORMULAIRE DIGITAL GÉNÉRÉ DEPUIS UN UPLOAD — style éditeur PDF ══ */
 .modal-overlay {
   position: fixed; inset: 0; z-index: 300; display: none; align-items: center; justify-content: center;
-  background: rgba(18,23,43,.55); backdrop-filter: blur(3px); padding: .75rem;
+  background: rgba(18,23,43,.55); backdrop-filter: blur(3px); padding: .25rem;
 }
 .modal-overlay.show { display: flex; }
 .modal {
-  background: #fff; border-radius: 1rem; width: 97vw; max-width: 1700px; height: 95vh;
+  background: #fff; border-radius: 1rem; width: 99.5vw; max-width: none; height: 99vh;
   overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 30px 80px -20px rgba(18,23,43,.35);
 }
 .modal-topbar {
@@ -1017,7 +1017,7 @@ button:active, .nav-cta:active, .btn-upload:active, .btn-sign-doc:active {
 .btn-send:hover { background: var(--champl); }
 
 .modal-work { display: flex; flex: 1; min-height: 0; }
-.modal-thumbs { width: 82px; flex-shrink: 0; background: var(--slate); border-right: 1px solid var(--bd); padding: 1rem .5rem; overflow-y: auto; }
+.modal-thumbs { width: 140px; flex-shrink: 0; background: var(--slate); border-right: 1px solid var(--bd); padding: 1rem .75rem; overflow-y: auto; }
 .thumb-page {
   width: 100%; aspect-ratio: 3/4; background: #fff; border: 1px solid var(--bd); border-radius: .4rem;
   box-shadow: 0 2px 6px rgba(18,23,43,.1); padding: .35rem; display: flex; flex-direction: column; gap: .22rem; overflow: hidden;
@@ -1028,7 +1028,7 @@ button:active, .nav-cta:active, .btn-upload:active, .btn-sign-doc:active {
 
 .modal-canvas { flex: 1; background: #E7E9F1; padding: 2rem 1.5rem; overflow-y: auto; display: flex; justify-content: center; }
 
-.modal-fields-panel { width: 290px; flex-shrink: 0; background: #fff; border-left: 1px solid var(--bd); padding: 1.25rem 1.4rem; overflow-y: auto; }
+.modal-fields-panel { width: 360px; flex-shrink: 0; background: #fff; border-left: 1px solid var(--bd); padding: 1.5rem 1.75rem; overflow-y: auto; }
 .panel-title { font-family: 'JetBrains Mono', monospace; font-size: .66rem; text-transform: uppercase; letter-spacing: .6px; color: var(--gray); margin-bottom: 1.1rem; }
 
 .form-group { margin-bottom: 1.1rem; }
@@ -1048,12 +1048,12 @@ button:active, .nav-cta:active, .btn-upload:active, .btn-sign-doc:active {
 }
 .doc-render-wrap canvas, .doc-render-wrap img { display: block; max-width: 100%; height: auto; }
 .render-loading {
-  width: 560px; max-width: 100%; aspect-ratio: 3/4; display: flex; align-items: center; justify-content: center;
+  width: 900px; max-width: 100%; aspect-ratio: 3/4; display: flex; align-items: center; justify-content: center;
   font-family: 'JetBrains Mono', monospace; font-size: .78rem; color: var(--gray); background: #fff;
 }
 .docx-render {
-  width: 560px; max-width: 100%; min-height: 640px; padding: 2.5rem 2.75rem; background: #fff;
-  font-size: .85rem; line-height: 1.6; color: var(--ivory); overflow-wrap: break-word;
+  width: 900px; max-width: 100%; min-height: 900px; padding: 3rem 3.5rem; background: #fff;
+  font-size: .95rem; line-height: 1.6; color: var(--ivory); overflow-wrap: break-word;
 }
 .render-unsupported {
   width: 560px; max-width: 100%; min-height: 400px; display: flex; flex-direction: column; align-items: center;
@@ -1111,6 +1111,20 @@ button:active, .nav-cta:active, .btn-upload:active, .btn-sign-doc:active {
   .modal-fields-panel { width: 100%; border-left: none; border-top: 1px solid var(--bd); }
   .modal-canvas { padding: 1.25rem; }
 }
+.auth-modal {
+  background: #fff; border-radius: 1rem; width: 100%; max-width: 380px;
+  padding: 1.5rem; box-shadow: 0 30px 80px -20px rgba(18,23,43,.35);
+}
+.auth-modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+.auth-modal-tabs { display: flex; gap: .5rem; margin-bottom: 1.1rem; border-bottom: 1px solid var(--bd); }
+.auth-tab { flex: 1; background: none; border: none; padding: .6rem 0; font-size: .82rem; font-weight: 600; color: var(--gray); border-bottom: 2px solid transparent; }
+.auth-tab.active { color: var(--champ); border-bottom-color: var(--champ); }
+.auth-error { background: rgba(239,68,68,.08); color: #EF4444; font-size: .78rem; padding: .6rem .75rem; border-radius: .5rem; margin-bottom: 1rem; }
+.nav-auth-btn { background: none; border: none; font-size: .82rem; font-weight: 600; color: var(--ivory); opacity: .72; margin-right: .75rem; }
+.nav-auth-btn:hover { opacity: 1; }
+.docs-list-modal { background: #fff; border-radius: 1rem; width: 100%; max-width: 460px; max-height: 70vh; overflow-y: auto; padding: 1.5rem; box-shadow: 0 30px 80px -20px rgba(18,23,43,.35); }
+.docs-list-item { display: flex; justify-content: space-between; align-items: center; padding: .75rem 0; border-bottom: 1px solid var(--bd); font-size: .85rem; }
+.docs-list-empty { color: var(--gray); font-size: .85rem; text-align: center; padding: 1.5rem 0; }
 </style>
 <script defer src="/_vercel/insights/script.js"></script>
 </head>
@@ -1125,6 +1139,8 @@ button:active, .nav-cta:active, .btn-upload:active, .btn-sign-doc:active {
     <a href="#tarifs">Tarifs</a>
     <a href="#faq">FAQ</a>
   </div>
+  <button type="button" class="nav-auth-btn" id="navAuthBtn" onclick="handleNavAuthClick()">Se connecter</button>
+  <button type="button" class="nav-auth-btn" id="navDocsBtn" onclick="openDocsListModal()" style="display:none">Mes documents</button>
   <button class="nav-cta" onclick="scrollToCTA()">Rejoindre la beta</button>
 </nav>
 
@@ -1355,6 +1371,41 @@ button:active, .nav-cta:active, .btn-upload:active, .btn-sign-doc:active {
         </div>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- MODALE AUTHENTIFICATION -->
+<div class="modal-overlay" id="authModalOverlay" onclick="if(event.target===this) closeAuthModal()">
+  <div class="auth-modal">
+    <div class="auth-modal-header">
+      <div class="modal-brand">Paraf<span>é</span></div>
+      <button type="button" class="modal-icon-btn" title="Fermer" onclick="closeAuthModal()">✕</button>
+    </div>
+    <div class="auth-modal-tabs">
+      <button type="button" class="auth-tab active" id="authTabLogin" onclick="setAuthMode('login')">Se connecter</button>
+      <button type="button" class="auth-tab" id="authTabSignup" onclick="setAuthMode('signup')">Créer un compte</button>
+    </div>
+    <div id="authError" class="auth-error" style="display:none"></div>
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" id="authEmail" placeholder="ton@email.fr">
+    </div>
+    <div class="form-group">
+      <label>Mot de passe</label>
+      <input type="password" id="authPassword" placeholder="••••••••" minlength="6">
+    </div>
+    <button type="button" class="btn-primary" id="authSubmitBtn" style="width:100%" onclick="submitAuthForm()">Se connecter</button>
+  </div>
+</div>
+
+<!-- MODALE MES DOCUMENTS -->
+<div class="modal-overlay" id="docsListModalOverlay" onclick="if(event.target===this) closeDocsListModal()">
+  <div class="docs-list-modal">
+    <div class="auth-modal-header">
+      <div class="modal-brand">Mes documents</div>
+      <button type="button" class="modal-icon-btn" title="Fermer" onclick="closeDocsListModal()">✕</button>
+    </div>
+    <div id="docsListBody"><div class="docs-list-empty">Chargement...</div></div>
   </div>
 </div>
 
@@ -1827,12 +1878,118 @@ button:active, .nav-cta:active, .btn-upload:active, .btn-sign-doc:active {
   </div>
 </footer>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.7.0/mammoth.browser.min.js"></script>
-<script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" integrity="sha384-/1qUCSGwTur9vjf/z9lmu/eCUYbpOTgSjmpbMQZ1/CtX2v/WcAIKqRv+U1DUCG6e" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.7.0/mammoth.browser.min.js" integrity="sha384-XsDe9keS+6qnJvogt5RdvXf7GBLzUYIb8TiVP3pHI4/oBwvxwdkCMiesydsYgRdF" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js" integrity="sha384-weMABwrltA6jWR8DDe9Jp5blk+tZQh7ugpCsF3JwSA53WZM9/14PjS5LAJNHNjAI" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@supabase/supabase-js@2.110.3/dist/umd/supabase.js" integrity="sha384-sihuiVHG7vyEIuePVbLI4QpHu1dbhCZe4Zqp0FuqnFeEnyIhF3koyXoBZyfbFsYs" crossorigin="anonymous"></script>
 <script>
 if (window.pdfjsLib) {
   pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+}
+
+const SUPABASE_URL = 'https://ahmoujwfmtipiojocsin.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFobW91andmbXRpcGlvam9jc2luIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM5Mzg4NTcsImV4cCI6MjA5OTUxNDg1N30.TYqKA9kBdNULEEeonW1DiLnBvXsqNO7d7j8PVZ-9Yoo';
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// ── AUTHENTIFICATION ─────────────────────────────────────
+let currentUser = null;
+let authMode = 'login';
+
+function openAuthModal(mode) {
+  setAuthMode(mode);
+  document.getElementById('authEmail').value = '';
+  document.getElementById('authPassword').value = '';
+  document.getElementById('authError').style.display = 'none';
+  document.getElementById('authModalOverlay').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+function closeAuthModal() {
+  document.getElementById('authModalOverlay').classList.remove('show');
+  document.body.style.overflow = '';
+}
+function setAuthMode(mode) {
+  authMode = mode;
+  document.getElementById('authTabLogin').classList.toggle('active', mode === 'login');
+  document.getElementById('authTabSignup').classList.toggle('active', mode === 'signup');
+  document.getElementById('authSubmitBtn').textContent = mode === 'login' ? 'Se connecter' : 'Créer un compte';
+  document.getElementById('authError').style.display = 'none';
+}
+async function submitAuthForm() {
+  const email = document.getElementById('authEmail').value.trim();
+  const password = document.getElementById('authPassword').value;
+  const errorEl = document.getElementById('authError');
+  errorEl.style.display = 'none';
+  if (!email || !password) {
+    errorEl.textContent = 'Email et mot de passe requis.';
+    errorEl.style.display = 'block';
+    return;
+  }
+  const btn = document.getElementById('authSubmitBtn');
+  const originalLabel = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Patiente...';
+  const { error } = authMode === 'login'
+    ? await supabaseClient.auth.signInWithPassword({ email, password })
+    : await supabaseClient.auth.signUp({ email, password });
+  btn.disabled = false;
+  btn.textContent = originalLabel;
+  if (error) {
+    errorEl.textContent = error.message;
+    errorEl.style.display = 'block';
+    return;
+  }
+  closeAuthModal();
+}
+function handleNavAuthClick() {
+  if (currentUser) {
+    supabaseClient.auth.signOut();
+  } else {
+    openAuthModal('login');
+  }
+}
+function updateAuthUI(user) {
+  currentUser = user;
+  const navAuthBtn = document.getElementById('navAuthBtn');
+  const navDocsBtn = document.getElementById('navDocsBtn');
+  navAuthBtn.textContent = user ? 'Se déconnecter' : 'Se connecter';
+  navDocsBtn.style.display = user ? 'inline-block' : 'none';
+}
+supabaseClient.auth.onAuthStateChange((_event, session) => updateAuthUI(session ? session.user : null));
+supabaseClient.auth.getSession().then(({ data }) => updateAuthUI(data.session ? data.session.user : null));
+
+// ── MES DOCUMENTS ─────────────────────────────────────────
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+async function openDocsListModal() {
+  document.getElementById('docsListModalOverlay').classList.add('show');
+  document.body.style.overflow = 'hidden';
+  const bodyEl = document.getElementById('docsListBody');
+  bodyEl.innerHTML = '<div class="docs-list-empty">Chargement...</div>';
+  const { data, error } = await supabaseClient
+    .from('documents')
+    .select('id, title, status, created_at')
+    .order('created_at', { ascending: false });
+  if (error) {
+    bodyEl.innerHTML = `<div class="docs-list-empty">Erreur : ${escapeHtml(error.message)}</div>`;
+    return;
+  }
+  if (!data.length) {
+    bodyEl.innerHTML = '<div class="docs-list-empty">Aucun document enregistré pour l\'instant.</div>';
+    return;
+  }
+  bodyEl.innerHTML = data.map(doc => `
+    <div class="docs-list-item">
+      <span>${escapeHtml(doc.title)}</span>
+      <span>${doc.status === 'completed' ? '✓ Envoyé' : 'Brouillon'} · ${new Date(doc.created_at).toLocaleDateString('fr-FR')}</span>
+    </div>
+  `).join('');
+}
+function closeDocsListModal() {
+  document.getElementById('docsListModalOverlay').classList.remove('show');
+  document.body.style.overflow = '';
 }
 
 // ── NAVBAR SCROLL ────────────────────────────────────────
@@ -1890,6 +2047,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 // ── ÉTAT ──────────────────────────────────────────────────
 let currentUploadFile = null;
+let currentDocumentId = null;
 let docState = null;
 let fields = [];
 let fieldIdSeq = 1;
@@ -1900,6 +2058,7 @@ const FIELD_LABELS = { signature: 'Signature', initials: 'Initiales', date: 'Dat
 
 async function openUploadForm(file) {
   currentUploadFile = file;
+  currentDocumentId = null;
   fields = [];
   fieldIdSeq = 1;
   disarmField();
@@ -1917,9 +2076,51 @@ function closeUploadForm() {
   disarmField();
 }
 
-function submitUploadForm() {
+async function persistDocument(status) {
+  if (!currentUser || !currentUploadFile) return true;
+  try {
+    let storagePath = docState && docState.storagePath;
+    if (!storagePath) {
+      storagePath = `${currentUser.id}/${Date.now()}_${currentUploadFile.name}`;
+      const { error: uploadError } = await supabaseClient.storage
+        .from('documents')
+        .upload(storagePath, currentUploadFile, { upsert: false });
+      if (uploadError) throw uploadError;
+      if (docState) docState.storagePath = storagePath;
+    }
+    const payload = {
+      user_id: currentUser.id,
+      title: prettifyFileName(currentUploadFile.name),
+      original_filename: currentUploadFile.name,
+      storage_path: storagePath,
+      fields,
+      status,
+    };
+    if (currentDocumentId) {
+      const { error } = await supabaseClient.from('documents').update(payload).eq('id', currentDocumentId);
+      if (error) throw error;
+    } else {
+      const { data, error } = await supabaseClient.from('documents').insert(payload).select('id').single();
+      if (error) throw error;
+      currentDocumentId = data.id;
+    }
+    return true;
+  } catch (err) {
+    console.error('Sauvegarde du document — échec :', err);
+    return false;
+  }
+}
+
+async function submitUploadForm() {
+  const saved = await persistDocument('completed');
   closeUploadForm();
   const btn = document.getElementById('btnSignDoc');
+  if (!saved) {
+    const status = document.getElementById('previewStatus');
+    status.textContent = '✗ Échec de l\'enregistrement. Réessaie.';
+    status.style.color = '#EF4444';
+    return;
+  }
   btn.disabled = true;
   btn.style.opacity = '.6';
   btn.textContent = '✓ Formulaire rempli et envoyé';
@@ -2041,7 +2242,7 @@ async function renderPdfPage(n) {
   const canvas = wrap.querySelector('canvas');
   const page = await docState.pdfDoc.getPage(n);
   const vp1 = page.getViewport({ scale: 1 });
-  const targetWidth = Math.min(document.getElementById('modalCanvas').clientWidth - 48, 720);
+  const targetWidth = document.getElementById('modalCanvas').clientWidth - 48;
   const scale = targetWidth / vp1.width;
   const viewport = page.getViewport({ scale });
   canvas.width = viewport.width;
